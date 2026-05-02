@@ -25,17 +25,16 @@
 
 body {
   background:
-    linear-gradient(180deg, rgba(17, 17, 19, 0.76) 0%, rgba(17, 17, 19, 0.96) 54%, #111113 100%),
-    url("/assets/background.png") center top / cover no-repeat fixed;
+    linear-gradient(180deg, rgba(17, 17, 19, 0.92) 0%, rgba(17, 17, 19, 0.85) 50%, #111113 100%),
+    url("/assets/background.png") center 40% / cover no-repeat fixed;
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   color-scheme: dark;
 }
 
 .glass-header {
-  border-bottom: 1px solid var(--border);
-  background: rgba(18, 17, 19, 0.5);
-  backdrop-filter: blur(4px);
+  border-bottom: 1px solid #F1E6FD30;
+  background: #12111380;
 }
 
 .app-shell {
@@ -48,8 +47,9 @@ body {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(17, 17, 19, 0.35) 0%, rgba(17, 17, 19, 0.78) 56%, rgba(17, 17, 19, 1) 100%),
-    url("/assets/background.png") center top / cover no-repeat;
+    radial-gradient(ellipse at center, rgba(17, 17, 19, 0.4) 0%, rgba(17, 17, 19, 0.75) 50%, rgba(17, 17, 19, 1) 100%),
+    linear-gradient(180deg, rgba(17, 17, 19, 0.6) 0%, rgba(17, 17, 19, 0.3) 50%, rgba(17, 17, 19, 0.95) 100%),
+    url("/assets/background.png") center 90% / cover no-repeat fixed;
   pointer-events: none;
 }
 

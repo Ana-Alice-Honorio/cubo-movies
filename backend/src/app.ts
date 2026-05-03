@@ -3,6 +3,7 @@ import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
 import { authRoutes, authCookieName } from './routes/auth.js';
+import { movieRoutes } from './routes/movies.js';
 import { registerAuthPlugin } from './plugins/auth.js';
 
 export function buildApp() {
@@ -13,6 +14,8 @@ export function buildApp() {
   app.register(cors, {
     origin: true,
     credentials: true,
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
   app.register(cookie);
@@ -30,6 +33,7 @@ export function buildApp() {
   app.get('/health', async () => ({ status: 'ok' }));
 
   app.register(authRoutes, { prefix: '/auth' });
+  app.register(movieRoutes);
 
   if (!isProduction) {
     app.log.info('Running in development mode');

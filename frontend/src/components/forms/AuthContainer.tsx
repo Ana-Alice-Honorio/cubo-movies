@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { SignUpForm, SignInForm, type SignUpData, type SignInData } from '@/components/forms';
 import { buildApiUrl, parseApiError } from '@/lib/api';
 
@@ -9,6 +10,7 @@ export function AuthContainer() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleSignUpSubmit = async (data: SignUpData) => {
     setIsSubmitting(true);
@@ -82,6 +84,8 @@ export function AuthContainer() {
       }
 
       setSuccessMessage('Login realizado com sucesso.');
+      // Redirecionar para /movies após sucesso
+      setTimeout(() => router.push('/movies'), 500);
       return true;
     } catch {
       setErrorMessage('Não foi possível conectar ao servidor. Verifique se o backend está rodando.');

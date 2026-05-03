@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Inter } from "next/font/google";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { AuthProvider } from "@/lib/auth-context";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -36,11 +37,13 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-[#0f0e11] text-white">
-        <div className="app-shell flex min-h-screen flex-col">
-          <Header />
-          <main className="flex flex-1">{children}</main>
-          <Footer />
-        </div>
+        <AuthProvider>
+          <div className="app-shell flex min-h-screen flex-col">
+            <Header />
+            <main className="flex flex-1">{children}</main>
+            <Footer />
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );

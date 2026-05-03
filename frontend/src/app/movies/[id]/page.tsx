@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { buildApiUrl, parseApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
 interface MovieDetail {
   id: string;
@@ -134,6 +135,7 @@ export default function MovieDetailsPage() {
   const [error, setError] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -233,13 +235,14 @@ export default function MovieDetailsPage() {
   const explicitEmbed = youtubeToEmbed(movie.trailerLink ?? null);
   const trailerUrl = explicitEmbed ?? getTrailerEmbedUrl(movie.title);
 
-  const handleDelete = async () => {
-    const confirmed = window.confirm(`Excluir o filme "${movie.title}"?`);
-    if (!confirmed) {
-      return;
-    }
+  const handleDelete = () => {
+    setShowConfirm(true);
+  };
 
+  const confirmDelete = async () => {
+    if (!movie) return;
     setIsDeleting(true);
+    setShowConfirm(false);
 
     try {
       const response = await fetch(buildApiUrl(`/movies/${movie.id}`), {
@@ -412,6 +415,16 @@ export default function MovieDetailsPage() {
           }}
         />
       )}
+      <ConfirmDialog
+        open={showConfirm}
+        title={`Excluir "${movie?.title ?? ''}"?`}
+        description="Esta ação não pode ser desfeita."
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        loading={isDeleting}
+        onConfirm={confirmDelete}
+        onCancel={() => setShowConfirm(false)}
+      />
     </div>
   );
 }

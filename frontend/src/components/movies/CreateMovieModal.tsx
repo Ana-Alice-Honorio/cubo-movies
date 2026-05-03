@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { buildApiUrl } from '@/lib/api';
 import { Button, Input } from '@/components/ui';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
 interface MovieFormMovie {
   id: string;
@@ -56,6 +57,7 @@ export default function CreateMovieModal({ onClose, onSuccess, movie }: CreateMo
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleChange = (
@@ -191,18 +193,18 @@ export default function CreateMovieModal({ onClose, onSuccess, movie }: CreateMo
     }
   };
 
-  const handleDelete = async () => {
-    if (!movie?.id) {
-      return;
-    }
+  const handleDelete = () => {
+    setShowConfirmDelete(true);
+  };
 
-    const confirmed = window.confirm(`Excluir o filme "${movie.title}"?`);
-    if (!confirmed) {
+  const confirmDeleteAction = async () => {
+    if (!movie?.id) {
       return;
     }
 
     setIsSubmitting(true);
     setError(null);
+    setShowConfirmDelete(false);
 
     try {
       const response = await fetch(buildApiUrl(`/movies/${movie.id}`), {
@@ -406,6 +408,16 @@ export default function CreateMovieModal({ onClose, onSuccess, movie }: CreateMo
             </Button>
           </div>
         </form>
+        <ConfirmDialog
+          open={showConfirmDelete}
+          title={`Excluir "${movie?.title ?? ''}"?`}
+          description="Esta ação não pode ser desfeita."
+          confirmLabel="Excluir"
+          cancelLabel="Cancelar"
+          loading={isSubmitting}
+          onConfirm={confirmDeleteAction}
+          onCancel={() => setShowConfirmDelete(false)}
+        />
       </div>
     </div>
   );

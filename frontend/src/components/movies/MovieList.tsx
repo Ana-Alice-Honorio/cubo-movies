@@ -23,7 +23,76 @@ interface ListResponse {
   pagination: { limit: number; offset: number; total: number };
 }
 
-export default function MovieList() {
+interface MovieListProps {
+  searchQuery?: string;
+}
+
+function formatMovieYear(releaseDate: string) {
+  return new Date(releaseDate).getFullYear();
+}
+
+function getInitials(title: string) {
+  return title
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0]?.toUpperCase())
+    .join('');
+}
+
+function MovieCard({ movie }: { movie: Movie }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const hasImage = Boolean(movie.imageUrl) && !imageFailed;
+  const initials = getInitials(movie.title);
+
+  return (
+    <article className="group overflow-hidden rounded-[16px] border border-white/10 bg-[#17161b]/90 shadow-[0_14px_40px_rgba(0,0,0,0.28)] transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
+      <div className="relative aspect-[2/3] overflow-hidden bg-[radial-gradient(circle_at_top,rgba(168,85,247,0.34),rgba(10,10,12,0.94)_58%)]">
+        {hasImage ? (
+          <img
+            src={movie.imageUrl}
+            alt={movie.title}
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            onError={() => setImageFailed(true)}
+          />
+        ) : (
+          <div className="absolute inset-0 flex h-full w-full flex-col justify-between p-4 text-white/90">
+            <div className="flex justify-end">
+              <span className="rounded-full border border-white/15 bg-black/30 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">
+                Sem poster
+              </span>
+            </div>
+
+            <div className="flex flex-1 items-center justify-center">
+              <div className="flex h-24 w-24 items-center justify-center rounded-full border border-white/15 bg-black/30 text-2xl font-bold tracking-widest text-white/95 shadow-lg backdrop-blur-sm">
+                {initials || 'CM'}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <span
+          className={`absolute left-4 top-4 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] shadow-sm ${
+            movie.status === 'PUBLISHED'
+              ? 'bg-emerald-400/18 text-emerald-200 ring-1 ring-emerald-300/20'
+              : 'bg-amber-400/18 text-amber-200 ring-1 ring-amber-300/20'
+          }`}
+        >
+          {movie.status === 'PUBLISHED' ? 'PUBLICADO' : 'RASCUNHO'}
+        </span>
+      </div>
+
+      <div className="px-4 py-4 space-y-2">
+        <h3 className="text-sm font-bold uppercase leading-tight text-white tracking-tight line-clamp-2">
+          {movie.title}
+        </h3>
+        <p className="text-xs text-muted uppercase tracking-[0.05em]">{movie.genre}</p>
+      </div>
+    </article>
+  );
+}
+
+export default function MovieList({ searchQuery = '' }: MovieListProps) {
   const { user } = useAuth();
   const [movies, setMovies] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,8 +115,7 @@ export default function MovieList() {
         }
 
         const data: ListResponse = await response.json();
-          console.log('Movies loaded:', data.data);
-          setMovies(data.data);
+        setMovies(data.data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Erro ao carregar filmes');
       } finally {
@@ -59,55 +127,64 @@ export default function MovieList() {
   }, [user]);
 
   if (isLoading) {
-    return <p className="text-muted">Carregando filmes...</p>;
+    return (
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-5">
+        {Array.from({ length: 5 }).map((_, index) => (
+          <div
+            key={index}
+            className="animate-pulse overflow-hidden rounded-[20px] border border-white/10 bg-white/5"
+          >
+            <div className="aspect-[2/3] bg-white/10" />
+            <div className="space-y-3 p-4">
+              <div className="h-4 w-3/4 rounded-full bg-white/10" />
+              <div className="h-3 w-1/2 rounded-full bg-white/10" />
+              <div className="h-3 w-full rounded-full bg-white/10" />
+              <div className="h-3 w-5/6 rounded-full bg-white/10" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
   }
 
   if (error) {
-    return <p className="text-red-400">{error}</p>;
+    return (
+      <div className="rounded-[20px] border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+        {error}
+      </div>
+    );
   }
 
-  if (movies.length === 0) {
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const filteredMovies = normalizedQuery
+    ? movies.filter((movie) => {
+        return [movie.title, movie.originalTitle, movie.genre, movie.description]
+          .filter((value): value is string => Boolean(value))
+          .some((value) => value.toLowerCase().includes(normalizedQuery));
+      })
+    : movies;
+
+  if (filteredMovies.length === 0) {
     return (
-      <div className="flex items-center justify-center rounded-lg border border-border p-12">
-        <p className="text-muted">Nenhum filme cadastrado ainda.</p>
+      <div className="flex items-center justify-center rounded-[24px] border border-white/10 bg-black/20 p-12 text-center backdrop-blur-sm">
+        <div className="max-w-md space-y-2">
+          <p className="text-lg font-semibold text-foreground">
+            {normalizedQuery ? 'Nenhum filme encontrado' : 'Nenhum filme cadastrado ainda'}
+          </p>
+          <p className="text-sm text-muted">
+            {normalizedQuery
+              ? 'Tente pesquisar por outro título, gênero ou descrição.'
+              : 'Adicione o primeiro filme para começar sua coleção.'}
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {movies.map((movie) => (
-        <div
-          key={movie.id}
-          className="surface-card overflow-hidden rounded-lg transition-transform hover:scale-105"
-        >
-          {movie.imageUrl && (
-            <img
-              src={movie.imageUrl}
-              alt={movie.title}
-              className="h-64 w-full object-cover"
-            />
-          )}
-          <div className="p-4">
-            <h3 className="font-bold text-foreground line-clamp-2">{movie.title}</h3>
-            {movie.originalTitle && (
-              <p className="text-sm text-muted line-clamp-1">{movie.originalTitle}</p>
-            )}
-            <p className="mt-2 text-sm text-muted">{movie.genre}</p>
-            <p className="text-xs text-muted">
-              {movie.durationMinutes}min • {new Date(movie.releaseDate).getFullYear()}
-            </p>
-            <span
-              className={`mt-3 inline-block text-xs font-semibold px-2 py-1 rounded ${
-                movie.status === 'PUBLISHED'
-                  ? 'bg-emerald-500/20 text-emerald-300'
-                  : 'bg-yellow-500/20 text-yellow-300'
-              }`}
-            >
-              {movie.status === 'PUBLISHED' ? 'Publicado' : 'Rascunho'}
-            </span>
-          </div>
-        </div>
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-5">
+      {filteredMovies.map((movie) => (
+        <MovieCard key={movie.id} movie={movie} />
       ))}
     </div>
   );

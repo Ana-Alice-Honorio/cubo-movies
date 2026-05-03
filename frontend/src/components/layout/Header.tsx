@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Button } from "@/components/ui";
 
 export default function Header() {
   return (
@@ -54,13 +55,9 @@ export default function Header() {
               style={{ filter: "invert(1)" }}
             />
           </button>
-          <button
-            type="button"
-            className="flex h-[44px] min-h-[44px] w-[90px] items-center justify-center rounded-[2px] px-5 text-[14px] font-semibold leading-[19px] transition-colors"
-            style={{ backgroundColor: "#8E4EC6", color: "#EEEEF0" }}
-          >
+          <Button variant="primary">
             Logout
-          </button>
+          </Button>
         </div>
       </div>
     </header>

@@ -1,5 +1,6 @@
 'use client';
 
+import CreateMovieModal from '@/components/movies/CreateMovieModal';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -131,6 +132,8 @@ export default function MovieDetailsPage() {
   const [movie, setMovie] = useState<MovieDetail | null>(null);
   const [isFetching, setIsFetching] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -230,6 +233,32 @@ export default function MovieDetailsPage() {
   const explicitEmbed = youtubeToEmbed(movie.trailerLink ?? null);
   const trailerUrl = explicitEmbed ?? getTrailerEmbedUrl(movie.title);
 
+  const handleDelete = async () => {
+    const confirmed = window.confirm(`Excluir o filme "${movie.title}"?`);
+    if (!confirmed) {
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      const response = await fetch(buildApiUrl(`/movies/${movie.id}`), {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error(await parseApiError(response));
+      }
+
+      router.push('/movies');
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : 'Erro ao excluir filme');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="w-full px-4 py-6 md:px-6 md:py-8">
       <section className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-[18px] border border-white/10 bg-[#121115]">
@@ -259,9 +288,17 @@ export default function MovieDetailsPage() {
               </Link>
               <button
                 type="button"
-                disabled
-                className="inline-flex h-[44px] cursor-not-allowed items-center justify-center rounded-[2px] bg-[#8E4EC6] px-6 text-sm font-semibold text-white/60"
-                title="Edição será implementada em seguida"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                style={{ backgroundColor: "#B744F714" }}
+                className="inline-flex h-[44px] items-center justify-center rounded-[2px] px-6 text-sm cursor-pointer font-semibold text-red-100 transition-colors hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isDeleting ? 'Excluindo...' : 'Deletar'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowEditModal(true)}
+                className="inline-flex h-[44px] items-center cursor-pointer justify-center rounded-[2px] bg-[#8E4EC6] px-6 text-sm font-semibold text-white transition-colors hover:brightness-110"
               >
                 Editar
               </button>
@@ -270,8 +307,8 @@ export default function MovieDetailsPage() {
 
           <div className="mt-6">
             <div className="grid gap-6 md:grid-cols-12 items-start">
-              <div className="md:col-span-3 flex justify-center md:justify-start">
-                <div className="w-full max-w-[240px]">
+              <div className="md:col-span-4 flex justify-center md:justify-start">
+                <div className="w-full max-w-[330px]">
                   {movie.imageUrl ? (
                     <img
                       src={movie.imageUrl}
@@ -286,10 +323,10 @@ export default function MovieDetailsPage() {
                 </div>
               </div>
 
-              <div className="md:col-span-9 space-y-5">
-                <p className="text-xl italic leading-tight text-white/90 md:text-2xl">Todo heroi tem um comeco.</p>
+                <div className="md:col-span-8 space-y-5 lg:max-w-[840px]">
+                  <p className="text-xl italic leading-tight text-white/90 md:text-2xl">Todo heroi tem um comeco.</p>
 
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <InfoCard label="Lançamento" value={`${formatDate(movie.releaseDate)}`} />
                   <InfoCard label="Duração" value={formatDuration(movie.durationMinutes)} />
                   <InfoCard label="Situação" value={movie.status === 'PUBLISHED' ? 'Lançado' : 'Rascunho'} />
@@ -298,8 +335,8 @@ export default function MovieDetailsPage() {
                   <InfoCard label="Atualizado em" value={formatDate(movie.updatedAt)} />
                 </div>
 
-                <div className="grid gap-4 lg:grid-cols-[1fr,220px]">
-                  <article className="rounded-[10px] border border-white/10 bg-black/30 p-5 backdrop-blur-sm">
+                  <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr),200px]">
+                    <article className="rounded-[10px] border border-white/10 bg-black/30 p-5 backdrop-blur-sm">
                     <h2 className="text-2xl font-semibold text-white">Sinopse</h2>
                     <p className="mt-3 text-base leading-7 text-white/85 md:text-lg md:leading-8">{movie.description}</p>
 
@@ -361,6 +398,20 @@ export default function MovieDetailsPage() {
           />
         </div>
       </section>
+
+      {showEditModal && movie && (
+        <CreateMovieModal
+          movie={movie}
+          onClose={() => setShowEditModal(false)}
+          onSuccess={(updatedMovie) => {
+            if (updatedMovie) {
+              setMovie(updatedMovie);
+            }
+
+            setShowEditModal(false);
+          }}
+        />
+      )}
     </div>
   );
 }

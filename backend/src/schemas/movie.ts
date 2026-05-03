@@ -8,7 +8,7 @@ export const createMovieSchema = z.object({
   budget: z.number().int().min(0, 'Orçamento deve ser um número positivo'),
   durationMinutes: z.number().int().min(1, 'Duração deve ser pelo menos 1 minuto'),
   genre: z.string().min(1, 'Gênero é obrigatório'),
-  trailerLink: z.string().url().optional().or(z.literal('')).transform((value) => value || undefined),
+  trailerLink: z.string().trim().min(1).optional().or(z.literal('')).transform((value) => value || undefined),
   status: z.enum(['DRAFT', 'PUBLISHED']).default('DRAFT'),
 });
 

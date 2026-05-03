@@ -1,26 +1,56 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useRef, useState } from 'react';
 import { buildApiUrl } from '@/lib/api';
 import { Button, Input } from '@/components/ui';
 
-interface CreateMovieModalProps {
-  onClose: () => void;
-  onSuccess: () => void;
+interface MovieFormMovie {
+  id: string;
+  title: string;
+  originalTitle: string | null;
+  description: string;
+  genre: string;
+  releaseDate: string;
+  budget: number;
+  durationMinutes: number;
+  trailerLink?: string | null;
+  imageUrl: string;
+  createdAt: string;
+  updatedAt: string;
+  status: 'DRAFT' | 'PUBLISHED';
 }
 
-export default function CreateMovieModal({ onClose, onSuccess }: CreateMovieModalProps) {
-  const [formData, setFormData] = useState({
-    title: '',
-    originalTitle: '',
-    description: '',
-    genre: '',
-    releaseDate: '',
-    budget: '',
-    durationMinutes: '',
-    trailerLink: '',
-    status: 'DRAFT' as 'DRAFT' | 'PUBLISHED',
-  });
+interface CreateMovieModalProps {
+  onClose: () => void;
+  onSuccess: (movie?: MovieFormMovie) => void;
+  movie?: MovieFormMovie;
+}
+
+function toDateInputValue(value?: string) {
+  if (!value) {
+    return '';
+  }
+
+  return value.slice(0, 10);
+}
+
+function getInitialFormData(movie?: MovieFormMovie) {
+  return {
+    title: movie?.title ?? '',
+    originalTitle: movie?.originalTitle ?? '',
+    description: movie?.description ?? '',
+    genre: movie?.genre ?? '',
+    releaseDate: toDateInputValue(movie?.releaseDate),
+    budget: movie?.budget ? String(movie.budget) : '',
+    durationMinutes: movie?.durationMinutes ? String(movie.durationMinutes) : '',
+    trailerLink: movie?.trailerLink ?? '',
+    status: movie?.status ?? ('DRAFT' as 'DRAFT' | 'PUBLISHED'),
+  };
+}
+
+export default function CreateMovieModal({ onClose, onSuccess, movie }: CreateMovieModalProps) {
+  const isEditMode = Boolean(movie);
+  const [formData, setFormData] = useState(() => getInitialFormData(movie));
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,114 +77,148 @@ export default function CreateMovieModal({ onClose, onSuccess }: CreateMovieModa
     }
   };
 
+  const saveMovieImage = async (movieId: string) => {
+    if (!selectedFile) {
+      return null;
+    }
+
+    const presignedResponse = await fetch(buildApiUrl('/movies/upload-url'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        fileName: selectedFile.name,
+        mimeType: selectedFile.type,
+      }),
+    });
+
+    if (!presignedResponse.ok) {
+      throw new Error('Erro ao gerar URL de upload');
+    }
+
+    const { url, key } = await presignedResponse.json();
+    setUploadProgress(60);
+
+    const uploadResponse = await fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': selectedFile.type },
+      body: selectedFile,
+    });
+
+    if (!uploadResponse.ok) {
+      throw new Error('Erro ao fazer upload da imagem');
+    }
+
+    setUploadProgress(80);
+
+    const imageUrl = `https://${process.env.NEXT_PUBLIC_AWS_S3_BUCKET || 'cubos-movies-files-bucket'}.s3.amazonaws.com/${key}`;
+
+    const imageUpdateResponse = await fetch(buildApiUrl(`/movies/${movieId}`), {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        imageUrl,
+        imageKey: key,
+      }),
+    });
+
+    if (!imageUpdateResponse.ok) {
+      throw new Error('Erro ao atualizar imagem do filme');
+    }
+
+    setUploadProgress(100);
+    return (await imageUpdateResponse.json()) as MovieFormMovie;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
     setUploadProgress(0);
 
-    let movieCreated = false;
-
     try {
-      // 1. Create movie without image
-      const createResponse = await fetch(buildApiUrl('/movies'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          title: formData.title,
-          originalTitle: formData.originalTitle,
-          description: formData.description,
-          genre: formData.genre,
-          releaseDate: new Date(formData.releaseDate).toISOString(),
-          budget: parseInt(formData.budget),
-          durationMinutes: parseInt(formData.durationMinutes),
-          status: formData.status,
-          trailerLink: formData.trailerLink || undefined,
-        }),
-      });
+      const payload = {
+        title: formData.title,
+        originalTitle: formData.originalTitle,
+        description: formData.description,
+        genre: formData.genre,
+        releaseDate: new Date(formData.releaseDate).toISOString(),
+        budget: parseInt(formData.budget),
+        durationMinutes: parseInt(formData.durationMinutes),
+        status: formData.status,
+        trailerLink: formData.trailerLink || undefined,
+      };
 
-      if (!createResponse.ok) {
-        const data = await createResponse.json();
-        throw new Error(data.message || 'Erro ao criar filme');
-      }
-
-      const movie = await createResponse.json();
-      movieCreated = true;
-      setUploadProgress(50);
-
-      // 2. Upload image if provided
-      if (selectedFile) {
-        try {
-          // 2a. Get presigned URL
-          const presignedResponse = await fetch(
-            buildApiUrl('/movies/upload-url'),
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
-              body: JSON.stringify({
-                fileName: selectedFile.name,
-                mimeType: selectedFile.type,
-              }),
-            }
-          );
-
-          if (!presignedResponse.ok) {
-            throw new Error('Erro ao gerar URL de upload');
-          }
-
-          const { url, key } = await presignedResponse.json();
-          setUploadProgress(60);
-
-          // 2b. Upload to S3
-          const uploadResponse = await fetch(url, {
-            method: 'PUT',
-            headers: { 'Content-Type': selectedFile.type },
-            body: selectedFile,
+      const response = isEditMode
+        ? await fetch(buildApiUrl(`/movies/${movie?.id}`), {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(payload),
+          })
+        : await fetch(buildApiUrl('/movies'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(payload),
           });
 
-          if (!uploadResponse.ok) {
-            throw new Error('Erro ao fazer upload da imagem');
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.message || (isEditMode ? 'Erro ao atualizar filme' : 'Erro ao criar filme'));
+      }
+
+      let savedMovie = (await response.json()) as MovieFormMovie;
+      setUploadProgress(50);
+
+      if (selectedFile) {
+        try {
+          const imageMovie = await saveMovieImage(savedMovie.id);
+          if (imageMovie) {
+            savedMovie = imageMovie;
           }
-
-          setUploadProgress(80);
-
-          // 2c. Update movie with image URL and key
-          const imageUrl = `https://${process.env.NEXT_PUBLIC_AWS_S3_BUCKET || 'cubos-movies-files-bucket'}.s3.amazonaws.com/${key}`;
-
-          const updateResponse = await fetch(
-            buildApiUrl(`/movies/${movie.id}`),
-            {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
-              body: JSON.stringify({
-                imageUrl,
-                imageKey: key,
-              }),
-            }
-          );
-
-          if (!updateResponse.ok) {
-            throw new Error('Erro ao atualizar imagem do filme');
-          }
-
-          setUploadProgress(100);
         } catch (uploadError) {
           console.error('Erro ao fazer upload da imagem:', uploadError);
-          // Não interrompe - filme foi criado, imagem é opcional
         }
       }
 
-      onSuccess();
+      onSuccess(savedMovie);
     } catch (err) {
-      // Se filme foi criado, considera como sucesso mesmo com erro de imagem
-      if (movieCreated) {
-        onSuccess();
-      } else {
-        setError(err instanceof Error ? err.message : 'Erro inesperado');
+      setError(err instanceof Error ? err.message : 'Erro inesperado');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!movie?.id) {
+      return;
+    }
+
+    const confirmed = window.confirm(`Excluir o filme "${movie.title}"?`);
+    if (!confirmed) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const response = await fetch(buildApiUrl(`/movies/${movie.id}`), {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.message || 'Erro ao excluir filme');
       }
+
+      onClose();
+      onSuccess(undefined);
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : 'Erro inesperado');
     } finally {
       setIsSubmitting(false);
     }
@@ -164,7 +228,7 @@ export default function CreateMovieModal({ onClose, onSuccess }: CreateMovieModa
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="surface-card w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">Novo Filme</h2>
+          <h2 className="text-2xl font-bold">{isEditMode ? 'Editar Filme' : 'Novo Filme'}</h2>
           <button
             onClick={onClose}
             className="text-muted hover:text-foreground cursor-pointer transition-colors"
@@ -314,6 +378,16 @@ export default function CreateMovieModal({ onClose, onSuccess }: CreateMovieModa
           )}
 
           <div className="flex gap-3 justify-end pt-4">
+            {isEditMode && (
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={isSubmitting}
+                className="mr-auto rounded border border-red-500/40 px-4 py-2 text-red-200 hover:bg-red-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Excluir
+              </button>
+            )}
             <button
               type="button"
               onClick={onClose}
@@ -328,7 +402,7 @@ export default function CreateMovieModal({ onClose, onSuccess }: CreateMovieModa
               isDisabled={isSubmitting}
               className="min-w-[120px]"
             >
-              {isSubmitting ? 'Enviando...' : 'Criar Filme'}
+              {isSubmitting ? 'Enviando...' : isEditMode ? 'Salvar Alterações' : 'Criar Filme'}
             </Button>
           </div>
         </form>

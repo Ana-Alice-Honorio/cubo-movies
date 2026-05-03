@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { buildApiUrl } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
@@ -26,10 +27,8 @@ interface ListResponse {
 
 interface MovieListProps {
   searchQuery?: string;
-}
-
-function formatMovieYear(releaseDate: string) {
-  return new Date(releaseDate).getFullYear();
+  currentPage: number;
+  onPageChange: (page: number) => void;
 }
 
 function getInitials(title: string) {
@@ -93,12 +92,11 @@ function MovieCard({ movie }: { movie: Movie }) {
   );
 }
 
-export default function MovieList({ searchQuery = '' }: MovieListProps) {
+export default function MovieList({ searchQuery = '', currentPage, onPageChange }: MovieListProps) {
   const { user } = useAuth();
   const [movies, setMovies] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
   const [totalItems, setTotalItems] = useState(0);
 
@@ -164,10 +162,6 @@ export default function MovieList({ searchQuery = '' }: MovieListProps) {
     };
   }, [user, currentPage, debouncedSearchQuery]);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery]);
-
   if (isLoading) {
     return (
       <div className="grid grid-cols-2 gap-5 xl:grid-cols-5">
@@ -222,14 +216,21 @@ export default function MovieList({ searchQuery = '' }: MovieListProps) {
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-5 xl:grid-cols-5">
         {movies.map((movie) => (
-          <MovieCard key={movie.id} movie={movie} />
+          <Link
+            key={movie.id}
+            href={`/movies/${movie.id}`}
+            className="block rounded-[16px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
+            aria-label={`Ver detalhes do filme ${movie.title}`}
+          >
+            <MovieCard movie={movie} />
+          </Link>
         ))}
       </div>
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-3">
           <button
-            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
             className="flex h-[44px] w-[44px] items-center justify-center rounded-[2px] bg-white/5 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:bg-white/10 active:bg-accent"
           >
@@ -248,7 +249,7 @@ export default function MovieList({ searchQuery = '' }: MovieListProps) {
               return (
                 <button
                   key={pageNum}
-                  onClick={() => setCurrentPage(pageNum)}
+                  onClick={() => onPageChange(pageNum)}
                   disabled={currentPage === pageNum}
                   className={currentPage === pageNum ? 'flex h-[44px] min-w-[44px] items-center justify-center rounded-[2px] text-sm font-semibold transition-all bg-accent text-white disabled:opacity-60 disabled:cursor-not-allowed' : 'flex h-[44px] min-w-[44px] items-center justify-center rounded-[2px] text-sm font-semibold transition-all bg-accent text-white cursor-pointer hover:brightness-110'}
                 >
@@ -259,7 +260,7 @@ export default function MovieList({ searchQuery = '' }: MovieListProps) {
           </div>
 
           <button
-            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage === totalPages}
             className="flex h-[44px] w-[44px] items-center justify-center rounded-[2px] bg-accent transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:brightness-110"
           >

@@ -13,6 +13,7 @@ export default function MoviesPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -39,7 +40,10 @@ export default function MoviesPage() {
           <label className="flex h-[44px] w-full max-w-[520px] items-center gap-3 rounded-[12px] border bg-white/5 px-4 text-muted transition-colors focus-within:border-white/20 focus-within:bg-white/10">
             <input
               value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
+              onChange={(event) => {
+                setSearchQuery(event.target.value);
+                setCurrentPage(1);
+              }}
               placeholder="Pesquise por filmes"
               className="h-full w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted/80"
             />
@@ -82,7 +86,12 @@ export default function MoviesPage() {
           </div>
           </div>
 
-        <MovieList key={refreshTrigger} searchQuery={searchQuery} />
+        <MovieList
+          key={refreshTrigger}
+          searchQuery={searchQuery}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+        />
 
         {showCreateModal && (
           <CreateMovieModal

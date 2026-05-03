@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { buildApiUrl } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
@@ -97,6 +98,9 @@ export default function MovieList({ searchQuery = '' }: MovieListProps) {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     if (!user) return;
@@ -128,8 +132,8 @@ export default function MovieList({ searchQuery = '' }: MovieListProps) {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-5">
-        {Array.from({ length: 5 }).map((_, index) => (
+      <div className="grid grid-cols-2 gap-5 xl:grid-cols-5">
+        {Array.from({ length: 10 }).map((_, index) => (
           <div
             key={index}
             className="animate-pulse overflow-hidden rounded-[20px] border border-white/10 bg-white/5"
@@ -181,11 +185,67 @@ export default function MovieList({ searchQuery = '' }: MovieListProps) {
     );
   }
 
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedMovies = filteredMovies.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(filteredMovies.length / ITEMS_PER_PAGE);
+
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-5">
-      {filteredMovies.map((movie) => (
-        <MovieCard key={movie.id} movie={movie} />
-      ))}
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 gap-5 xl:grid-cols-5">
+        {paginatedMovies.map((movie) => (
+          <MovieCard key={movie.id} movie={movie} />
+        ))}
+      </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-3">
+          <button
+            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+            className="flex h-[44px] w-[44px] items-center justify-center rounded-[2px] bg-white/5 transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white/10 active:bg-accent"
+          >
+            <Image
+              src="/svgs/Expand_left.svg"
+              alt="Página anterior"
+              width={20}
+              height={20}
+              style={{ filter: "invert(1)" }}
+            />
+          </button>
+
+          <div className="flex gap-2">
+            {Array.from({ length: totalPages }).map((_, index) => {
+              const pageNum = index + 1;
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setCurrentPage(pageNum)}
+                  disabled={currentPage === pageNum}
+                  className={currentPage === pageNum ? 'flex h-[44px] min-w-[44px] items-center justify-center rounded-[2px] text-sm font-semibold transition-all bg-accent text-white disabled:opacity-60 disabled:cursor-not-allowed' : 'flex h-[44px] min-w-[44px] items-center justify-center rounded-[2px] text-sm font-semibold transition-all bg-accent text-white hover:brightness-110'}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
+            className="flex h-[44px] w-[44px] items-center justify-center rounded-[2px] bg-accent transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110"
+          >
+            <Image
+              src="/svgs/Expand_right.svg"
+              alt="Próxima página"
+              width={20}
+              height={20}
+              style={{ filter: "invert(1)" }}
+            />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
+

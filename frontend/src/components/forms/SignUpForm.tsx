@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { Button, Input } from '@/components/ui';
 
 interface SignUpFormProps {
-  onSubmit?: (data: SignUpData) => void;
+  onSubmit?: (data: SignUpData) => Promise<boolean> | boolean;
+  isSubmitting?: boolean;
 }
 
 export interface SignUpData {
@@ -14,7 +15,7 @@ export interface SignUpData {
   confirmPassword: string;
 }
 
-export function SignUpForm({ onSubmit }: SignUpFormProps) {
+export function SignUpForm({ onSubmit, isSubmitting = false }: SignUpFormProps) {
   const [formData, setFormData] = useState<SignUpData>({
     name: '',
     email: '',
@@ -68,18 +69,19 @@ export function SignUpForm({ onSubmit }: SignUpFormProps) {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (validateForm()) {
-      onSubmit?.(formData);
-      // Reset form
-      setFormData({
-        name: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-      });
+      const shouldReset = await onSubmit?.(formData);
+      if (shouldReset !== false) {
+        setFormData({
+          name: '',
+          email: '',
+          password: '',
+          confirmPassword: '',
+        });
+      }
     }
   };
 
@@ -94,6 +96,7 @@ export function SignUpForm({ onSubmit }: SignUpFormProps) {
           value={formData.name}
           onChange={handleChange}
           error={errors.name}
+          disabled={isSubmitting}
         />
       </div>
 
@@ -106,6 +109,7 @@ export function SignUpForm({ onSubmit }: SignUpFormProps) {
           value={formData.email}
           onChange={handleChange}
           error={errors.email}
+          disabled={isSubmitting}
         />
       </div>
 
@@ -118,6 +122,7 @@ export function SignUpForm({ onSubmit }: SignUpFormProps) {
           value={formData.password}
           onChange={handleChange}
           error={errors.password}
+          disabled={isSubmitting}
         />
       </div>
 
@@ -130,6 +135,7 @@ export function SignUpForm({ onSubmit }: SignUpFormProps) {
           value={formData.confirmPassword}
           onChange={handleChange}
           error={errors.confirmPassword}
+          disabled={isSubmitting}
         />
       </div>
 
@@ -137,8 +143,9 @@ export function SignUpForm({ onSubmit }: SignUpFormProps) {
         <Button
           type="submit"
           variant="primary"
+          isDisabled={isSubmitting}
         >
-          Cadastrar
+          {isSubmitting ? 'Cadastrando...' : 'Cadastrar'}
         </Button>
       </div>
     </form>

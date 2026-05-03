@@ -13,12 +13,15 @@ const s3Client = new S3Client({
 export async function generatePresignedUploadUrl(
   fileName: string,
   mimeType: string,
-  expiresIn = 3600
+  expiresIn = 3600,
+  userId?: string
 ) {
   const bucket = process.env.AWS_S3_BUCKET;
   if (!bucket) throw new Error('AWS_S3_BUCKET not configured');
 
-  const key = `movies/${Date.now()}-${randomBytes(8).toString('hex')}-${fileName}`;
+  const safeFileName = fileName.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+  const prefix = userId ? `movies/${userId}/` : 'movies/';
+  const key = `${prefix}${Date.now()}-${randomBytes(8).toString('hex')}-${safeFileName}`;
 
   const command = new PutObjectCommand({
     Bucket: bucket,

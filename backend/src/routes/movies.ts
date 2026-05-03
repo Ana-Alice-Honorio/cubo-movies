@@ -80,14 +80,15 @@ export async function movieRoutes(app: FastifyInstance) {
     '/movies/upload-url',
     { onRequest: [app.authenticate] },
     async (request, reply) => {
-      const { fileName, mimeType } = request.body;
+      const { fileName, mimeType } = request.body as { fileName?: string; mimeType?: string };
+      const userId = request.user.sub;
 
       if (!fileName || !mimeType) {
         return reply.status(400).send({ message: 'fileName e mimeType são obrigatórios' });
       }
 
       try {
-        const { url, key } = await generatePresignedUploadUrl(fileName, mimeType);
+        const { url, key } = await generatePresignedUploadUrl(fileName, mimeType, 3600, userId);
         return reply.send({ url, key });
       } catch (error) {
         app.log.error(error);
@@ -124,6 +125,24 @@ export async function movieRoutes(app: FastifyInstance) {
       if (body.status === 'DRAFT' || body.status === 'PUBLISHED') updateData.status = body.status;
       if (typeof body.imageKey === 'string') updateData.imageKey = body.imageKey;
       if (typeof body.imageUrl === 'string') updateData.imageUrl = body.imageUrl;
+
+      // If imageKey is being changed, ensure it belongs to this user and remove old image
+      if (typeof body.imageKey === 'string' && body.imageKey !== movie.imageKey) {
+        const expectedPrefix = `movies/${request.user.sub}/`;
+        if (!body.imageKey.startsWith(expectedPrefix)) {
+          return reply.status(400).send({ message: 'imageKey inválido para este usuário' });
+        }
+
+        // delete old image if exists
+        if (movie.imageKey) {
+          try {
+            await deleteS3Object(movie.imageKey);
+          } catch (err) {
+            app.log.error('Failed to delete previous image from S3:');
+            app.log.error(String(err));
+          }
+        }
+      }
 
       try {
         const updated = await prisma.movie.update({

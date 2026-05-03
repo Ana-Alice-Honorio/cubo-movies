@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { buildApiUrl } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
+import { type MovieFilters } from './movieFilters';
 
 interface Movie {
   id: string;
@@ -28,6 +29,7 @@ interface ListResponse {
 interface MovieListProps {
   searchQuery?: string;
   currentPage: number;
+  filters: MovieFilters;
   onPageChange: (page: number) => void;
 }
 
@@ -92,10 +94,11 @@ function MovieCard({ movie }: { movie: Movie }) {
   );
 }
 
-export default function MovieList({ searchQuery = '', currentPage, onPageChange }: MovieListProps) {
+export default function MovieList({ searchQuery = '', currentPage, filters, onPageChange }: MovieListProps) {
   const { user } = useAuth();
   const [movies, setMovies] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
   const [totalItems, setTotalItems] = useState(0);
@@ -116,7 +119,10 @@ export default function MovieList({ searchQuery = '', currentPage, onPageChange 
     const controller = new AbortController();
 
     async function loadMovies() {
-      setIsLoading(true);
+      const hasExistingMovies = movies.length > 0;
+
+      setIsLoading(!hasExistingMovies);
+      setIsRefreshing(hasExistingMovies);
       setError(null);
 
       try {
@@ -129,6 +135,22 @@ export default function MovieList({ searchQuery = '', currentPage, onPageChange 
         const normalizedQuery = debouncedSearchQuery.trim();
         if (normalizedQuery) {
           params.set('q', normalizedQuery);
+        }
+
+        if (filters.genre.trim()) {
+          params.set('genre', filters.genre.trim());
+        }
+
+        if (filters.releaseDateFrom) {
+          params.set('releaseDateFrom', filters.releaseDateFrom);
+        }
+
+        if (filters.releaseDateTo) {
+          params.set('releaseDateTo', filters.releaseDateTo);
+        }
+
+        if (filters.status !== 'ALL') {
+          params.set('status', filters.status);
         }
 
         const response = await fetch(buildApiUrl(`/movies?${params.toString()}`), {
@@ -151,6 +173,7 @@ export default function MovieList({ searchQuery = '', currentPage, onPageChange 
       } finally {
         if (!controller.signal.aborted) {
           setIsLoading(false);
+          setIsRefreshing(false);
         }
       }
     }
@@ -160,9 +183,9 @@ export default function MovieList({ searchQuery = '', currentPage, onPageChange 
     return () => {
       controller.abort();
     };
-  }, [user, currentPage, debouncedSearchQuery]);
+  }, [user, currentPage, debouncedSearchQuery, filters]);
 
-  if (isLoading) {
+  if (isLoading && movies.length === 0) {
     return (
       <div className="grid grid-cols-2 gap-5 xl:grid-cols-5">
         {Array.from({ length: 10 }).map((_, index) => (
@@ -184,6 +207,29 @@ export default function MovieList({ searchQuery = '', currentPage, onPageChange 
   }
 
   if (error) {
+    if (movies.length > 0) {
+      return (
+        <div className="space-y-4">
+          <div className="rounded-[20px] border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            {error}
+          </div>
+
+          <div className="grid grid-cols-2 gap-5 xl:grid-cols-5">
+            {movies.map((movie) => (
+              <Link
+                key={movie.id}
+                href={`/movies/${movie.id}`}
+                className="block rounded-[16px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
+                aria-label={`Ver detalhes do filme ${movie.title}`}
+              >
+                <MovieCard movie={movie} />
+              </Link>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="rounded-[20px] border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
         {error}
@@ -192,6 +238,12 @@ export default function MovieList({ searchQuery = '', currentPage, onPageChange 
   }
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
+  const hasFilters = Boolean(
+    filters.genre ||
+      filters.releaseDateFrom ||
+      filters.releaseDateTo ||
+      filters.status !== 'ALL'
+  );
 
   if (movies.length === 0) {
     return (
@@ -203,7 +255,9 @@ export default function MovieList({ searchQuery = '', currentPage, onPageChange 
           <p className="text-sm text-muted">
             {normalizedQuery
               ? 'Tente pesquisar por outro título, gênero ou descrição.'
-              : 'Adicione o primeiro filme para começar sua coleção.'}
+              : hasFilters
+                ? 'Tente ajustar os filtros aplicados para ampliar os resultados.'
+                : 'Adicione o primeiro filme para começar sua coleção.'}
           </p>
         </div>
       </div>
@@ -214,6 +268,12 @@ export default function MovieList({ searchQuery = '', currentPage, onPageChange 
 
   return (
     <div className="space-y-6">
+      {isRefreshing ? (
+        <div className="rounded-[16px] border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70">
+          Atualizando filmes...
+        </div>
+      ) : null}
+
       <div className="grid grid-cols-2 gap-5 xl:grid-cols-5">
         {movies.map((movie) => (
           <Link

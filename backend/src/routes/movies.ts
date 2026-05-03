@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify';
+import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import { createMovieSchema } from '../schemas/movie.js';
 import {
@@ -35,6 +36,26 @@ async function serializeMovie(movie: Awaited<ReturnType<typeof prisma.movie.find
     ...movie,
     imageUrl,
   };
+}
+
+function parseDateStart(value?: string) {
+  if (!value) {
+    return undefined;
+  }
+
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+}
+
+function parseDateEndExclusive(value?: string) {
+  const parsed = parseDateStart(value);
+
+  if (!parsed) {
+    return undefined;
+  }
+
+  parsed.setUTCDate(parsed.getUTCDate() + 1);
+  return parsed;
 }
 
 export async function movieRoutes(app: FastifyInstance) {
@@ -163,7 +184,17 @@ export async function movieRoutes(app: FastifyInstance) {
     }
   );
 
-  app.get<{ Querystring: { limit?: string; offset?: string; q?: string } }>(
+  app.get<{
+    Querystring: {
+      limit?: string;
+      offset?: string;
+      q?: string;
+      genre?: string;
+      releaseDateFrom?: string;
+      releaseDateTo?: string;
+      status?: 'DRAFT' | 'PUBLISHED';
+    };
+  }>(
     '/movies',
     { onRequest: [app.authenticate] },
     async (request, reply) => {
@@ -171,18 +202,38 @@ export async function movieRoutes(app: FastifyInstance) {
       const limit = Math.min(parseInt(request.query.limit as string) || 10, 100);
       const offset = parseInt(request.query.offset as string) || 0;
       const q = (request.query.q ?? '').trim();
+      const genre = (request.query.genre ?? '').trim();
+      const releaseDateFrom = parseDateStart(request.query.releaseDateFrom);
+      const releaseDateTo = parseDateEndExclusive(request.query.releaseDateTo);
+      const status = request.query.status;
 
-      const whereClause = q
-        ? {
-            userId,
-            OR: [
-              { title: { contains: q, mode: 'insensitive' as const } },
-              { originalTitle: { contains: q, mode: 'insensitive' as const } },
-              { genre: { contains: q, mode: 'insensitive' as const } },
-              { description: { contains: q, mode: 'insensitive' as const } },
-            ],
-          }
-        : { userId };
+      const whereClause: Prisma.MovieWhereInput = {
+        userId,
+        ...(q
+          ? {
+              OR: [
+                { title: { contains: q, mode: 'insensitive' } },
+                { originalTitle: { contains: q, mode: 'insensitive' } },
+                { genre: { contains: q, mode: 'insensitive' } },
+                { description: { contains: q, mode: 'insensitive' } },
+              ],
+            }
+          : {}),
+        ...(genre
+          ? {
+              genre: { equals: genre, mode: 'insensitive' as const },
+            }
+          : {}),
+        ...(releaseDateFrom || releaseDateTo
+          ? {
+              releaseDate: {
+                ...(releaseDateFrom ? { gte: releaseDateFrom } : {}),
+                ...(releaseDateTo ? { lt: releaseDateTo } : {}),
+              },
+            }
+          : {}),
+        ...(status ? { status } : {}),
+      };
 
       try {
         const movies = await prisma.movie.findMany({

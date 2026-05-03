@@ -158,23 +158,36 @@ export async function movieRoutes(app: FastifyInstance) {
     }
   );
 
-  app.get<{ Querystring: { limit?: string; offset?: string } }>(
+  app.get<{ Querystring: { limit?: string; offset?: string; q?: string } }>(
     '/movies',
     { onRequest: [app.authenticate] },
     async (request, reply) => {
       const userId = request.user.sub;
       const limit = Math.min(parseInt(request.query.limit as string) || 10, 100);
       const offset = parseInt(request.query.offset as string) || 0;
+      const q = (request.query.q ?? '').trim();
+
+      const whereClause = q
+        ? {
+            userId,
+            OR: [
+              { title: { contains: q, mode: 'insensitive' as const } },
+              { originalTitle: { contains: q, mode: 'insensitive' as const } },
+              { genre: { contains: q, mode: 'insensitive' as const } },
+              { description: { contains: q, mode: 'insensitive' as const } },
+            ],
+          }
+        : { userId };
 
       try {
         const movies = await prisma.movie.findMany({
-          where: { userId },
+          where: whereClause,
           skip: offset,
           take: limit,
           orderBy: { createdAt: 'desc' },
         });
 
-        const total = await prisma.movie.count({ where: { userId } });
+        const total = await prisma.movie.count({ where: whereClause });
         const data = await Promise.all(movies.map((movie) => serializeMovie(movie)));
 
         return reply.send({

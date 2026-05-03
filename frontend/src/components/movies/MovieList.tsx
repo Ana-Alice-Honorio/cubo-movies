@@ -99,19 +99,43 @@ export default function MovieList({ searchQuery = '' }: MovieListProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
+  const [totalItems, setTotalItems] = useState(0);
 
   const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
+  useEffect(() => {
     if (!user) return;
+
+    const controller = new AbortController();
 
     async function loadMovies() {
       setIsLoading(true);
       setError(null);
 
       try {
-        const response = await fetch(buildApiUrl('/movies?limit=20'), {
+        const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+        const params = new URLSearchParams({
+          limit: String(ITEMS_PER_PAGE),
+          offset: String(offset),
+        });
+
+        const normalizedQuery = debouncedSearchQuery.trim();
+        if (normalizedQuery) {
+          params.set('q', normalizedQuery);
+        }
+
+        const response = await fetch(buildApiUrl(`/movies?${params.toString()}`), {
           credentials: 'include',
+          signal: controller.signal,
         });
 
         if (!response.ok) {
@@ -120,15 +144,29 @@ export default function MovieList({ searchQuery = '' }: MovieListProps) {
 
         const data: ListResponse = await response.json();
         setMovies(data.data);
+        setTotalItems(data.pagination.total);
       } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') {
+          return;
+        }
         setError(err instanceof Error ? err.message : 'Erro ao carregar filmes');
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
       }
     }
 
     loadMovies();
-  }, [user]);
+
+    return () => {
+      controller.abort();
+    };
+  }, [user, currentPage, debouncedSearchQuery]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   if (isLoading) {
     return (
@@ -160,15 +198,8 @@ export default function MovieList({ searchQuery = '' }: MovieListProps) {
   }
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
-  const filteredMovies = normalizedQuery
-    ? movies.filter((movie) => {
-        return [movie.title, movie.originalTitle, movie.genre, movie.description]
-          .filter((value): value is string => Boolean(value))
-          .some((value) => value.toLowerCase().includes(normalizedQuery));
-      })
-    : movies;
 
-  if (filteredMovies.length === 0) {
+  if (movies.length === 0) {
     return (
       <div className="flex items-center justify-center rounded-[24px] border border-white/10 bg-black/20 p-12 text-center backdrop-blur-sm">
         <div className="max-w-md space-y-2">
@@ -185,15 +216,12 @@ export default function MovieList({ searchQuery = '' }: MovieListProps) {
     );
   }
 
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedMovies = filteredMovies.slice(startIndex, endIndex);
-  const totalPages = Math.ceil(filteredMovies.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-5 xl:grid-cols-5">
-        {paginatedMovies.map((movie) => (
+        {movies.map((movie) => (
           <MovieCard key={movie.id} movie={movie} />
         ))}
       </div>

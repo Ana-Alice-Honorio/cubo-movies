@@ -18,6 +18,7 @@ export default function CreateMovieModal({ onClose, onSuccess }: CreateMovieModa
     releaseDate: '',
     budget: '',
     durationMinutes: '',
+    trailerLink: '',
     status: 'DRAFT' as 'DRAFT' | 'PUBLISHED',
   });
 
@@ -69,6 +70,7 @@ export default function CreateMovieModal({ onClose, onSuccess }: CreateMovieModa
           budget: parseInt(formData.budget),
           durationMinutes: parseInt(formData.durationMinutes),
           status: formData.status,
+          trailerLink: formData.trailerLink || undefined,
         }),
       });
 
@@ -247,6 +249,18 @@ export default function CreateMovieModal({ onClose, onSuccess }: CreateMovieModa
               value={formData.durationMinutes}
               onChange={handleChange}
               required
+              disabled={isSubmitting}
+            />
+          </div>
+
+          <div>
+            <Input
+              label="Trailer (YouTube URL ou ID)"
+              name="trailerLink"
+              type="url"
+              value={formData.trailerLink}
+              onChange={handleChange}
+              placeholder="https://youtu.be/xxxxx or video id"
               disabled={isSubmitting}
             />
           </div>

@@ -62,6 +62,7 @@ export async function movieRoutes(app: FastifyInstance) {
             budget: payload.data.budget,
             durationMinutes: payload.data.durationMinutes,
             genre: payload.data.genre,
+            trailerLink: payload.data.trailerLink,
             imageUrl: '',
             status: payload.data.status,
             userId,
@@ -97,7 +98,10 @@ export async function movieRoutes(app: FastifyInstance) {
     }
   );
 
-  app.patch<{ Params: { id: string }; Body: { imageKey?: string; imageUrl?: string } & Record<string, unknown> }>(
+  app.patch<{
+    Params: { id: string };
+    Body: { imageKey?: string; imageUrl?: string; trailerLink?: string | null } & Record<string, unknown>;
+  }>(
     '/movies/:id',
     { onRequest: [app.authenticate] },
     async (request, reply) => {
@@ -125,6 +129,7 @@ export async function movieRoutes(app: FastifyInstance) {
       if (body.status === 'DRAFT' || body.status === 'PUBLISHED') updateData.status = body.status;
       if (typeof body.imageKey === 'string') updateData.imageKey = body.imageKey;
       if (typeof body.imageUrl === 'string') updateData.imageUrl = body.imageUrl;
+      if (typeof body.trailerLink === 'string' || body.trailerLink === null) updateData.trailerLink = body.trailerLink;
 
       // If imageKey is being changed, ensure it belongs to this user and remove old image
       if (typeof body.imageKey === 'string' && body.imageKey !== movie.imageKey) {

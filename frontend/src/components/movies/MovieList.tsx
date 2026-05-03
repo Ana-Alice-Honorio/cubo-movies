@@ -203,7 +203,7 @@ export default function MovieList({ searchQuery = '' }: MovieListProps) {
           <button
             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
-            className="flex h-[44px] w-[44px] items-center justify-center rounded-[2px] bg-white/5 transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white/10 active:bg-accent"
+            className="flex h-[44px] w-[44px] items-center justify-center rounded-[2px] bg-white/5 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:bg-white/10 active:bg-accent"
           >
             <Image
               src="/svgs/Expand_left.svg"
@@ -222,7 +222,7 @@ export default function MovieList({ searchQuery = '' }: MovieListProps) {
                   key={pageNum}
                   onClick={() => setCurrentPage(pageNum)}
                   disabled={currentPage === pageNum}
-                  className={currentPage === pageNum ? 'flex h-[44px] min-w-[44px] items-center justify-center rounded-[2px] text-sm font-semibold transition-all bg-accent text-white disabled:opacity-60 disabled:cursor-not-allowed' : 'flex h-[44px] min-w-[44px] items-center justify-center rounded-[2px] text-sm font-semibold transition-all bg-accent text-white hover:brightness-110'}
+                  className={currentPage === pageNum ? 'flex h-[44px] min-w-[44px] items-center justify-center rounded-[2px] text-sm font-semibold transition-all bg-accent text-white disabled:opacity-60 disabled:cursor-not-allowed' : 'flex h-[44px] min-w-[44px] items-center justify-center rounded-[2px] text-sm font-semibold transition-all bg-accent text-white cursor-pointer hover:brightness-110'}
                 >
                   {pageNum}
                 </button>
@@ -233,7 +233,7 @@ export default function MovieList({ searchQuery = '' }: MovieListProps) {
           <button
             onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage === totalPages}
-            className="flex h-[44px] w-[44px] items-center justify-center rounded-[2px] bg-accent transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110"
+            className="flex h-[44px] w-[44px] items-center justify-center rounded-[2px] bg-accent transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:brightness-110"
           >
             <Image
               src="/svgs/Expand_right.svg"

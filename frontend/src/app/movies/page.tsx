@@ -56,7 +56,7 @@ export default function MoviesPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center lg:justify-end">
             <button
               type="button"
-              className="h-[44px] min-w-[92px] rounded-[2px] px-5 py-3 font-semibold text-white transition-colors"
+              className="h-[44px] min-w-[92px] rounded-[2px] px-5 py-3 font-semibold text-white transition-colors cursor-pointer"
               style={{
                 backgroundColor: '#B744F714',
                 backdropFilter: 'blur(4px)',
@@ -69,7 +69,7 @@ export default function MoviesPage() {
 
             <button
               onClick={() => setShowCreateModal(true)}
-              className="h-[44px] min-w-[156px] rounded-[2px] px-5 py-3 font-semibold text-white transition-colors"
+              className="h-[44px] min-w-[156px] rounded-[2px] px-5 py-3 font-semibold text-white transition-colors cursor-pointer"
               style={{
                 backgroundColor: '#8E4EC6',
               }}

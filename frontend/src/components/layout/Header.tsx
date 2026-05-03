@@ -1,7 +1,16 @@
+"use client";
+
 import Image from "next/image";
 import { Button } from "@/components/ui";
+import { useAuth } from "@/lib/auth-context";
 
 export default function Header() {
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+  };
+
   return (
     <header className="glass-header">
       <div className="flex h-[72px] items-center justify-between px-4">
@@ -40,11 +49,11 @@ export default function Header() {
             Movies
           </span>
         </div>
-        <div className="flex h-[44px] w-[162px] items-center gap-2">
+        <div className="flex h-[44px] items-center gap-2">
           <button
             type="button"
             aria-label="Alternar tema"
-            className="flex h-[44px] min-h-[44px] w-[64px] items-center justify-center rounded-[2px] border border-none px-5 backdrop-blur-[4px] transition-colors"
+            className="flex h-[44px] min-h-[44px] w-[64px] items-center justify-center rounded-[2px] border border-none px-5 backdrop-blur-[4px] transition-colors cursor-pointer"
             style={{ backgroundColor: "#B744F714" }}
           >
             <Image
@@ -55,9 +64,11 @@ export default function Header() {
               style={{ filter: "invert(1)" }}
             />
           </button>
-          <Button variant="primary">
-            Logout
-          </Button>
+          {user && (
+            <Button variant="primary" onClick={handleLogout} className="cursor-pointer">
+              Logout
+            </Button>
+          )}
         </div>
       </div>
     </header>

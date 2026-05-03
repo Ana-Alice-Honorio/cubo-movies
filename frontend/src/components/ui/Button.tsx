@@ -20,11 +20,11 @@ export function Button({
 
   const primaryStyles = isDisabled
     ? 'bg-[#6F6D78] text-white cursor-not-allowed'
-    : 'bg-[#8E4EC6] text-white hover:bg-[#9A5CD0] active:bg-[#8457AA]';
+    : 'bg-[#8E4EC6] text-white cursor-pointer hover:bg-[#9A5CD0] active:bg-[#8457AA]';
 
   const secondaryStyles = isDisabled
     ? 'bg-[#EBEAF814] text-white cursor-not-allowed'
-    : 'bg-[#B744F714] backdrop-blur-[4px] text-white hover:bg-[#C150FF2E] active:bg-[#B412F90A]';
+    : 'bg-[#B744F714] backdrop-blur-[4px] text-white cursor-pointer hover:bg-[#C150FF2E] active:bg-[#B412F90A]';
 
   const variantStyles = variant === 'primary' ? primaryStyles : secondaryStyles;
 

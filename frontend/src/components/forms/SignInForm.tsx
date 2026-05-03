@@ -99,7 +99,7 @@ export function SignInForm({ onSubmit, onForgotPassword, isSubmitting = false }:
           type="button"
           onClick={onForgotPassword}
           disabled={isSubmitting}
-          className="text-sm text-accent hover:text-accent-hover underline underline-offset-2 transition-colors"
+          className="text-sm text-accent hover:text-accent-hover underline underline-offset-2 transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
         >
           Esqueci minha senha
         </button>

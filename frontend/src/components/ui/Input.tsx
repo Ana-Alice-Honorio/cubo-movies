@@ -24,6 +24,7 @@ export function Input({
           rounded-[4px] border border-[#3C393F] border-[1px]
           bg-[#1A191B] text-white
           placeholder-muted
+          cursor-text
           transition-colors
           focus:outline-none focus:border-[#8E4EC6] focus:ring-1 focus:ring-[#8E4EC6]
           disabled:bg-surface-hover disabled:cursor-not-allowed

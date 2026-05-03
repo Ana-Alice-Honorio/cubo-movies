@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation';
 import { SignUpForm, SignInForm, type SignUpData, type SignInData } from '@/components/forms';
 import { buildApiUrl, parseApiError } from '@/lib/api';
 
+import { useAuth } from '@/lib/auth-context';
 export function AuthContainer() {
   const [currentForm, setCurrentForm] = useState<'signin' | 'signup'>('signin');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const router = useRouter();
+  const { setUserData } = useAuth();
 
   const handleSignUpSubmit = async (data: SignUpData) => {
     setIsSubmitting(true);
@@ -82,6 +84,9 @@ export function AuthContainer() {
         setErrorMessage(message);
         return false;
       }
+
+      const userData = await meResponse.json();
+      setUserData(userData);
 
       setSuccessMessage('Login realizado com sucesso.');
       // Redirecionar para /movies após sucesso

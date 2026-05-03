@@ -165,7 +165,7 @@ export default function CreateMovieModal({ onClose, onSuccess }: CreateMovieModa
           <h2 className="text-2xl font-bold">Novo Filme</h2>
           <button
             onClick={onClose}
-            className="text-muted hover:text-foreground"
+            className="text-muted hover:text-foreground cursor-pointer transition-colors"
           >
             ✕
           </button>
@@ -304,7 +304,7 @@ export default function CreateMovieModal({ onClose, onSuccess }: CreateMovieModa
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-4 py-2 rounded border border-border text-foreground hover:bg-surface-hover disabled:opacity-50"
+              className="px-4 py-2 rounded border border-border text-foreground hover:bg-surface-hover disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
               Cancelar
             </button>

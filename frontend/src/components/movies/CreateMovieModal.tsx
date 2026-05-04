@@ -359,8 +359,8 @@ export default function CreateMovieModal({ onClose, onSuccess, movie }: CreateMo
               disabled={isSubmitting}
               className="w-full px-3 py-2 rounded border border-border bg-surface text-foreground focus:outline-none focus:border-accent"
             >
-              <option value="DRAFT">Rascunho</option>
-              <option value="PUBLISHED">Publicado</option>
+              <option value="DRAFT">Não lançado</option>
+              <option value="PUBLISHED">Lançado</option>
             </select>
           </div>
 

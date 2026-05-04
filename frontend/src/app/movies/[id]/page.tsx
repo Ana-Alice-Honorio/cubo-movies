@@ -332,7 +332,7 @@ export default function MovieDetailsPage() {
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <InfoCard label="Lançamento" value={`${formatDate(movie.releaseDate)}`} />
                   <InfoCard label="Duração" value={formatDuration(movie.durationMinutes)} />
-                  <InfoCard label="Situação" value={movie.status === 'PUBLISHED' ? 'Lançado' : 'Rascunho'} />
+                  <InfoCard label="Situação" value={movie.status === 'PUBLISHED' ? 'Lançado' : 'Não lançado'} />
                   <InfoCard label="Ano" value={String(releaseYear)} />
                   <InfoCard label="Orçamento" value={formatCurrency(movie.budget)} />
                   <InfoCard label="Atualizado em" value={formatDate(movie.updatedAt)} />

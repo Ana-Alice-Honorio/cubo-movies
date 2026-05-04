@@ -80,7 +80,7 @@ function MovieCard({ movie }: { movie: Movie }) {
               : 'bg-amber-400/18 text-amber-200 ring-1 ring-amber-300/20'
           }`}
         >
-          {movie.status === 'PUBLISHED' ? 'PUBLICADO' : 'RASCUNHO'}
+          {movie.status === 'PUBLISHED' ? 'LANÇADO' : 'NÃO LANÇADO'}
         </span>
       </div>
 

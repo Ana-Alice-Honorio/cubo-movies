@@ -137,8 +137,8 @@ export default function MoviesFilterModal({ open, filters, onClose, onApply, onC
               style={{ colorScheme: 'dark' }}
             >
               <option value="ALL">Todos</option>
-              <option value="PUBLISHED">Publicado</option>
-              <option value="DRAFT">Rascunho</option>
+              <option value="PUBLISHED">Lançado</option>
+              <option value="DRAFT">Não lançado</option>
             </select>
           </label>
 

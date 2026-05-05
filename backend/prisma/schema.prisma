@@ -28,6 +28,7 @@ model Movie {
   originalTitle    String?
   description      String
   releaseDate      DateTime
+  releaseReminderSentAt DateTime?
   budget           Int
   durationMinutes   Int
   genre            String

@@ -145,7 +145,7 @@ export default function CreateMovieModal({ onClose, onSuccess, movie }: CreateMo
         originalTitle: formData.originalTitle,
         description: formData.description,
         genre: formData.genre,
-        releaseDate: new Date(formData.releaseDate).toISOString(),
+        releaseDate: new Date(formData.releaseDate + 'T00:00:00Z').toISOString(),
         budget: parseInt(formData.budget),
         durationMinutes: parseInt(formData.durationMinutes),
         status: formData.status,

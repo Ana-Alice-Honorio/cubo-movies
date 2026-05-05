@@ -20,6 +20,12 @@ Fluxos principais na UI:
 - `/auth` — cadastro / login (o login recebe cookie httpOnly do backend)
 - `/movies` — listagem dos filmes e modal de criação (upload direto para S3 via presigned URL)
 
+Deploy e cron:
+- O cron da Vercel chama `GET /api/cron/send` nesta aplicação.
+- Defina `BACKEND_API_URL` apontando para o backend e `CRON_SECRET` com o mesmo valor usado no backend.
+- Se preferir, `NEXT_PUBLIC_API_URL` continua funcionando no frontend cliente.
+- O backend faz o envio real via Gmail SMTP com senha de app.
+
 Notas de debug:
 - Se thumbnails não aparecerem, abra DevTools → Console. A listagem (`GET /movies`) deve retornar `imageUrl` (URL de leitura, assinada pelo backend quando o bucket é privado).
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).

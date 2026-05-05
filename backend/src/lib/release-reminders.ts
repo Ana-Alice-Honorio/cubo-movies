@@ -12,10 +12,33 @@ type ReminderMovie = {
   };
 };
 
-function getUtcDayWindow(reference = new Date()) {
-  const start = new Date(Date.UTC(reference.getUTCFullYear(), reference.getUTCMonth(), reference.getUTCDate()));
-  const end = new Date(start);
-  end.setUTCDate(end.getUTCDate() + 1);
+const REMINDER_TIME_ZONE = 'America/Sao_Paulo';
+
+function getTimeZoneDayParts(reference = new Date()) {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: REMINDER_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+
+  const parts = formatter.formatToParts(reference);
+  const year = parts.find((part) => part.type === 'year')?.value;
+  const month = parts.find((part) => part.type === 'month')?.value;
+  const day = parts.find((part) => part.type === 'day')?.value;
+
+  if (!year || !month || !day) {
+    throw new Error('Não foi possível calcular a data atual no fuso do lembrete');
+  }
+
+  return { year, month, day };
+}
+
+function getReminderDayWindow(reference = new Date()) {
+  const { year, month, day } = getTimeZoneDayParts(reference);
+  const start = new Date(`${year}-${month}-${day}T00:00:00-03:00`);
+  const end = new Date(`${year}-${month}-${day}T00:00:00-03:00`);
+  end.setDate(end.getDate() + 1);
 
   return { start, end };
 }
@@ -23,7 +46,7 @@ function getUtcDayWindow(reference = new Date()) {
 function formatReleaseDate(date: Date) {
   return new Intl.DateTimeFormat('pt-BR', {
     dateStyle: 'long',
-    timeZone: 'UTC',
+    timeZone: REMINDER_TIME_ZONE,
   }).format(date);
 }
 
@@ -78,7 +101,7 @@ function buildEmailText(userName: string, movies: ReminderMovie[]) {
 }
 
 export async function sendReleaseReminders() {
-  const { start, end } = getUtcDayWindow();
+  const { start, end } = getReminderDayWindow();
 
   const movies = await prisma.movie.findMany({
     where: {

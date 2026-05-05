@@ -25,7 +25,7 @@ interface MovieDetail {
 }
 
 function formatDate(date: string) {
-  return new Intl.DateTimeFormat('pt-BR').format(new Date(date));
+  return new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo' }).format(new Date(date));
 }
 
 function formatCurrency(value: number) {

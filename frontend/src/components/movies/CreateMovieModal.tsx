@@ -140,12 +140,15 @@ export default function CreateMovieModal({ onClose, onSuccess, movie }: CreateMo
     setUploadProgress(0);
 
     try {
+      const [year, month, day] = formData.releaseDate.split('-').map(Number);
+      const releaseDateIso = new Date(year, month - 1, day).toISOString();
+
       const payload = {
         title: formData.title,
         originalTitle: formData.originalTitle,
         description: formData.description,
         genre: formData.genre,
-        releaseDate: new Date(formData.releaseDate + 'T00:00:00Z').toISOString(),
+        releaseDate: releaseDateIso,
         budget: parseInt(formData.budget),
         durationMinutes: parseInt(formData.durationMinutes),
         status: formData.status,

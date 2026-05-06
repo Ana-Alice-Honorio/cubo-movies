@@ -48,7 +48,7 @@ function MovieCard({ movie }: { movie: Movie }) {
   const initials = getInitials(movie.title);
 
   return (
-    <article className="group overflow-hidden rounded-[16px] border border-white/10 bg-[#17161b]/90 shadow-[0_14px_40px_rgba(0,0,0,0.28)] transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
+    <article className="group overflow-hidden rounded-[16px] border border-border bg-surface shadow-[0_14px_40px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 hover:border-border hover:shadow-[0_20px_60px_rgba(0,0,0,0.1)]">
       <div className="relative aspect-[2/3] overflow-hidden bg-[radial-gradient(circle_at_top,rgba(168,85,247,0.34),rgba(10,10,12,0.94)_58%)]">
         {hasImage ? (
           <img
@@ -58,15 +58,15 @@ function MovieCard({ movie }: { movie: Movie }) {
             onError={() => setImageFailed(true)}
           />
         ) : (
-          <div className="absolute inset-0 flex h-full w-full flex-col justify-between p-4 text-white/90">
+          <div className="absolute inset-0 flex h-full w-full flex-col justify-between p-4" style={{ color: 'var(--foreground)' }}>
             <div className="flex justify-end">
-              <span className="rounded-full border border-white/15 bg-black/30 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">
+              <span className="rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ borderColor: 'var(--border)', background: 'var(--surface-strong)', color: 'var(--muted)' }}>
                 Sem poster
               </span>
             </div>
 
             <div className="flex flex-1 items-center justify-center">
-              <div className="flex h-24 w-24 items-center justify-center rounded-full border border-white/15 bg-black/30 text-2xl font-bold tracking-widest text-white/95 shadow-lg backdrop-blur-sm">
+              <div className="flex h-24 w-24 items-center justify-center rounded-full border shadow-lg backdrop-blur-sm" style={{ borderColor: 'var(--border)', background: 'var(--surface-strong)', color: 'var(--foreground)' }}>
                 {initials || 'CM'}
               </div>
             </div>
@@ -84,8 +84,8 @@ function MovieCard({ movie }: { movie: Movie }) {
         </span>
       </div>
 
-      <div className="px-4 py-4 space-y-2">
-        <h3 className="text-sm font-bold uppercase leading-tight text-white tracking-tight line-clamp-2">
+        <div className="px-4 py-4 space-y-2">
+        <h3 className="text-sm font-bold uppercase leading-tight tracking-tight line-clamp-2" style={{ color: 'var(--foreground)' }}>
           {movie.title}
         </h3>
         <p className="text-xs text-muted uppercase tracking-[0.05em]">{movie.genre}</p>

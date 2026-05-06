@@ -11,6 +11,8 @@
   --accent: #a855f7;
   --accent-hover: #9350df;
   --accent-soft: rgba(168, 85, 247, 0.18);
+  --overlay: rgba(0, 0, 0, 0.5);
+  --highlight: #FFE600;
 }
 
 html[data-theme="light"] {
@@ -24,6 +26,8 @@ html[data-theme="light"] {
   --accent: #a855f7;
   --accent-hover: #9350df;
   --accent-soft: rgba(168, 85, 247, 0.12);
+  --overlay: rgba(0,0,0,0.12);
+  --highlight: #b8860b;
 }
 
 html[data-theme="dark"] {
@@ -37,6 +41,8 @@ html[data-theme="dark"] {
   --accent: #a855f7;
   --accent-hover: #9350df;
   --accent-soft: rgba(168, 85, 247, 0.18);
+  --overlay: rgba(0,0,0,0.5);
+  --highlight: #FFE600;
 }
 
 @theme inline {

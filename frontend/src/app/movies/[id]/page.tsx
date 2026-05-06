@@ -319,7 +319,7 @@ export default function MovieDetailsPage() {
                       className="aspect-[2/3] w-full rounded-[8px] object-cover shadow-lg"
                     />
                   ) : (
-                    <div className="flex aspect-[2/3] items-center justify-center rounded-[8px] bg-black/30 text-2xl font-bold text-white/70">
+                    <div className="flex aspect-[2/3] items-center justify-center rounded-[8px]" style={{ background: 'var(--surface-strong)', color: 'var(--foreground)' }}>
                       {movie.title.slice(0, 2).toUpperCase()}
                     </div>
                   )}
@@ -339,9 +339,9 @@ export default function MovieDetailsPage() {
                 </div>
 
                   <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr),200px]">
-                    <article className="rounded-[10px] border border-white/10 bg-black/30 p-5 backdrop-blur-sm">
-                    <h2 className="text-2xl font-semibold text-white">Sinopse</h2>
-                    <p className="mt-3 text-base leading-7 text-white/85 md:text-lg md:leading-8">{movie.description}</p>
+                    <article className="rounded-[10px] border p-5 backdrop-blur-sm" style={{ borderColor: 'var(--border)', background: 'var(--surface)', color: 'var(--foreground)' }}>
+                    <h2 className="text-2xl font-semibold" style={{ color: 'var(--foreground)' }}>Sinopse</h2>
+                    <p className="mt-3 text-base leading-7 md:text-lg md:leading-8" style={{ color: 'var(--foreground)', opacity: 0.85 }}>{movie.description}</p>
 
                     <div className="mt-5">
                       <h3 className="text-lg font-semibold text-white/90">Generos</h3>
@@ -350,33 +350,34 @@ export default function MovieDetailsPage() {
                           genres.map((genre) => (
                             <span
                               key={genre}
-                              className="rounded-[4px] bg-[#57316f]/95 px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white"
+                              className="rounded-[4px] px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em]"
+                              style={{ background: 'var(--surface-strong)', color: 'var(--foreground)' }}
                             >
                               {genre}
                             </span>
                           ))
                         ) : (
-                          <span className="text-sm text-white/60">Genero nao informado</span>
+                          <span className="text-sm" style={{ color: 'var(--foreground)', opacity: 0.6 }}>Genero nao informado</span>
                         )}
                       </div>
                     </div>
                   </article>
 
-                  <article className="flex flex-col items-center justify-center rounded-[10px] border border-white/10 bg-black/30 p-4 backdrop-blur-sm">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/65">
+                  <article className="flex flex-col items-center justify-center rounded-[10px] border p-4 backdrop-blur-sm" style={{ borderColor: 'var(--border)', background: 'var(--surface)', color: 'var(--foreground)' }}>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--foreground)', opacity: 0.65 }}>
                       Completude dos dados
                     </p>
                     <div
                       className="mt-4 grid h-[120px] w-[120px] place-items-center rounded-full"
                       style={{
-                        background: `conic-gradient(#FFE600 ${completeness}%, rgba(255,255,255,0.15) ${completeness}% 100%)`,
+                        background: `conic-gradient(var(--highlight) ${completeness}%, rgba(255,255,255,0.15) ${completeness}% 100%)`,
                       }}
                     >
-                      <div className="grid h-[100px] w-[100px] place-items-center rounded-full bg-[#18171d] text-3xl font-bold text-[#FFE600]">
+                      <div className="grid h-[100px] w-[100px] place-items-center rounded-full" style={{ background: 'var(--surface-strong)', color: 'var(--highlight)', fontWeight: 700, fontSize: '1.5rem' }}>
                         {completeness}%
                       </div>
                     </div>
-                    <p className="mt-4 text-center text-xs text-white/60">
+                    <p className="mt-4 text-center text-xs" style={{ color: 'var(--foreground)', opacity: 0.6 }}>
                       Indicador interno baseado nos campos preenchidos deste cadastro.
                     </p>
                   </article>

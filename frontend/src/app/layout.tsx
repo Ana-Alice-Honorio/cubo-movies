@@ -24,6 +24,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Cubos Movies",
   description: "Aplicação de filmes do desafio técnico Cubos.",
+  icons: {
+    icon: "/assets/Vector.png",
+  },
 };
 
 export default function RootLayout({

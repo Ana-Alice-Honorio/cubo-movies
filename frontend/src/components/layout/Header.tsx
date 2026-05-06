@@ -25,7 +25,7 @@ export default function Header() {
             priority
           />
           <Image
-            src="/Vector.png"
+            src="/assets/Vector.png"
             alt="Cubos Movies Icon"
             width={35}
             height={35}

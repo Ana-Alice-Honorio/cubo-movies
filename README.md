@@ -1,45 +1,266 @@
 # Cubos Movies
 
-O objetivo deste desafio é desenvolver uma aplicação web completa e responsiva, cobrindo
-tanto o frontend quanto o backend. A aplicação deve permitir que os usuários realizem as
-operações de adicionar, editar, excluir e visualizar detalhes de filmes. Adicionalmente,
-são essenciais as funcionalidades de busca e filtragem dentro da lista de filmes.
+Aplicação web completa e responsiva de gerenciamento de filmes com backend em **Fastify + Prisma** e frontend em **Next.js**.
 
-Aplicação de gerenciamento de filmes com backend em Fastify + Prisma e frontend em Next.js.
+## Objetivo
 
-Arquitetura resumida:
-- Backend: Node.js + Fastify, autenticação JWT via cookie httpOnly, Prisma ORM para PostgreSQL.
-- Banco: PostgreSQL (docker local recomendado para testes).
-- Storage: S3 privado com uploads via presigned PUT e presigned GET para leitura.
-- Frontend: Next.js (app router), formulários de auth e CRUD de filmes.
+Desenvolver uma plataforma que permita usuários:
+- ✅ Gerenciar filmes (adicionar, editar, excluir, visualizar)
+- ✅ Buscar e filtrar filmes
+- ✅ Autenticação segura com JWT
+- ✅ Receber lembretes de lançamentos por email
 
-Quick start (local)
+## Pré-requisitos
 
-1. Subir Postgres em Docker:
-```bash
-docker run --name cubos-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=cubos_movies -p 5432:5432 -d postgres:16
+- **Node.js** 18+ (recomendado LTS)
+- **npm** 9+
+- **Docker** (para PostgreSQL local)
+- **Git**
+
+## Arquitetura
+
+```
+┌─────────────────────────────────────────┐
+│        Frontend (Next.js 14+)           │
+│  - TypeScript, Tailwind CSS             │
+│  - Auth Context, Theme Context          │
+│  - CRUD de filmes com modal            │
+└────────────────┬────────────────────────┘
+                 │ HTTP/REST
+┌────────────────▼────────────────────────┐
+│   Backend (Fastify + Node.js)           │
+│  - JWT auth via httpOnly cookies        │
+│  - Prisma ORM                           │
+│  - S3 presigned URLs (upload/download)  │
+│  - CRON jobs para lembretes             │
+└────────────────┬────────────────────────┘
+                 │
+    ┌────────────┴────────────┬─────────────┐
+    │                         │             │
+┌───▼──────┐         ┌────────▼───┐   ┌────▼────┐
+│ PostgreSQL│         │ S3 Bucket  │   │ SMTP    │
+│ (Prisma)  │         │ (imagens)  │   │(lembretes)
+└──────────┘         └────────────┘   └─────────┘
 ```
 
-2. Configurar variáveis de ambiente no `backend/.env` (exemplo abaixo).
+## Estrutura do Projeto
 
-3. Rodar migrações e gerar client Prisma:
+```
+cubos-movies/
+├── backend/                 # API Node.js + Fastify
+│   ├── src/
+│   │   ├── app.ts          # Config Fastify
+│   │   ├── server.ts       # Inicialização
+│   │   ├── plugins/        # Plugins (auth, etc)
+│   │   ├── routes/         # Rotas de API
+│   │   ├── schemas/        # Validações Zod
+│   │   └── lib/            # Utilitários (S3, prisma, etc)
+│   ├── prisma/
+│   │   ├── schema.prisma   # Model do banco
+│   │   └── migrations/     # Histórico de mudanças
+│   └── package.json
+│
+├── frontend/                # App Next.js
+│   ├── src/
+│   │   ├── app/            # Layout + páginas
+│   │   ├── components/     # Componentes React
+│   │   ├── lib/            # Contextos e utilitários
+│   │   └── public/         # Assets estáticos
+│   └── package.json
+│
+└── README.md               # Este arquivo
+```
+
+## Quick Start (Local)
+
+### 1. Clonar e instalar dependências
+
+```bash
+git clone <repo>
+cd cubos-movies
+```
+
+### 2. Configurar banco de dados
+
+```bash
+# Iniciar PostgreSQL em Docker
+docker run \
+  --name cubos-postgres \
+  -e POSTGRES_USER=admin \
+  -e POSTGRES_PASSWORD=senha123 \
+  -e POSTGRES_DB=cubos_movies \
+  -p 5432:5432 \
+  -d postgres:16
+
+# Para iniciar novamente (se parado)
+docker start cubos-postgres
+```
+
+### 3. Configurar variáveis de ambiente
+
+Criar arquivo `backend/.env`:
+
+```env
+# Banco de dados
+DATABASE_URL="postgresql://[usuario]:[senha]@localhost:5432/cubos_movies"
+
+# JWT
+JWT_SECRET="sua-chave-secreta-muito-segura-aqui"
+
+# Servidor
+PORT=3001
+
+# AWS S3 (upload de posters)
+AWS_ACCESS_KEY_ID="sua-chave-id"
+AWS_SECRET_ACCESS_KEY="sua-chave-secreta"
+AWS_REGION="us-east-1"
+AWS_S3_BUCKET="seu-bucket-name"
+
+# Email (SMTP para lembretes)
+SMTP_USER="seu-email@gmail.com"
+SMTP_APP_PASSWORD="sua-senha-app"
+MAIL_FROM="seu-email@gmail.com"
+
+# CRON
+ENABLE_RELEASE_REMINDER_CRON=true
+CRON_SECRET="chave-secreta-cron"
+```
+
+**Variáveis explicadas:**
+- `DATABASE_URL`: String de conexão PostgreSQL
+- `JWT_SECRET`: Chave para assinar tokens JWT (use algo como `openssl rand -base64 32`)
+- `AWS_*`: Credenciais e bucket S3 para armazenar posters de filmes
+- `SMTP_*`: Configuração de email para lembretes de lançamento
+- `CRON_SECRET`: Token para proteger endpoint de CRON
+
+### 4. Setup backend
+
 ```bash
 cd backend
+
+# Instalar dependências
 npm install
+
+# Rodar migrações do banco
 npx prisma migrate dev --name init
+
+# Gerar cliente Prisma
 npx prisma generate
+
+# Iniciar servidor (dev)
+npm run dev
 ```
 
-4. Iniciar serviços:
+O backend estará disponível em `http://localhost:3001`
+
+### 5. Setup frontend
+
 ```bash
-# backend
-npm run dev
-# frontend (em outra aba)
 cd frontend
+
+# Instalar dependências
 npm install
+
+# Iniciar desenvolvimento
 npm run dev
 ```
 
-5. Abrir http://localhost:3000
+O frontend estará disponível em `http://localhost:3000`
 
-Para detalhes e instruções do `backend` e do `frontend`, veja os READMEs nas respectivas pastas.
+### 6. Acessar a aplicação
+
+Abra seu navegador em **http://localhost:3000**
+
+## Variáveis de Ambiente Detalhadas
+
+| Variável | Descrição | Exemplo |
+|----------|-----------|---------|
+| `DATABASE_URL` | String de conexão PostgreSQL | `postgresql://user:pass@localhost:5432/db` |
+| `JWT_SECRET` | Chave para assinar JWT tokens | Mínimo 32 caracteres aleatórios |
+| `PORT` | Porta do backend | `3001` |
+| `AWS_ACCESS_KEY_ID` | Chave de acesso AWS | Obtém na AWS Console |
+| `AWS_SECRET_ACCESS_KEY` | Chave secreta AWS | Obtém na AWS Console |
+| `AWS_REGION` | Região AWS | `us-east-1`, `sa-east-1`, etc |
+| `AWS_S3_BUCKET` | Nome do bucket S3 | `meu-bucket-filmes` |
+| `SMTP_USER` | Email para enviar | `seu-email@gmail.com` |
+| `SMTP_APP_PASSWORD` | Senha app (Gmail) | Gerar em: https://myaccount.google.com/apppasswords |
+| `MAIL_FROM` | Email de origem | `seu-email@gmail.com` |
+| `CRON_SECRET` | Token para jobs agendados | Qualquer string segura |
+| `ENABLE_RELEASE_REMINDER_CRON` | Ativar lembretes | `true` ou `false` |
+
+## Troubleshooting
+
+### Erro: "Banco de dados não encontrado"
+```bash
+# Verificar se PostgreSQL está rodando
+docker ps | grep postgres
+
+# Reiniciar container
+docker restart cubos-postgres
+```
+
+### Erro: "JWT_SECRET não definido"
+- Verificar se arquivo `.env` existe em `backend/.env`
+- Confirmar que variáveis estão preenchidas (sem espaços em branco)
+
+### Erro: "Falha ao conectar S3"
+- Verificar credenciais AWS na AWS Console
+- Confirmar que bucket existe e está acessível
+- Verificar permissões de CORS do bucket (ver `backend/setup-s3-cors.ts`)
+
+### Porta 3000 ou 3001 já em uso
+```bash
+# Mudar porta no .env
+PORT=3002
+
+# Ou liberar porta (Linux/Mac)
+lsof -ti:3001 | xargs kill -9
+```
+
+## Scripts Disponíveis
+
+### Backend
+```bash
+npm run dev      # Modo desenvolvimento com hot-reload
+npm run build    # Build para produção
+npm run start    # Rodar build de produção
+npm run test     # Executar testes
+```
+
+### Frontend
+```bash
+npm run dev      # Modo desenvolvimento
+npm run build    # Build otimizado
+npm start        # Rodar build
+npm run lint     # Verificar código
+```
+
+## Documentação da API
+
+O backend possui documentação interativa via **Swagger UI / OpenAPI**:
+
+- **Local**: http://localhost:3001/docs
+- **Endpoints documentados**: Autenticação, CRUD de filmes, uploads S3, cron de lembretes
+- **Tente requisições**: O Swagger permite testar endpoints diretamente
+
+> **Nota**: O Swagger fica disponível após iniciar o backend com `npm run dev`
+
+## Documentação
+
+- **[Backend README](./backend/README.md)** - Endpoints, autenticação, middleware, Swagger
+- **[Frontend README](./frontend/README.md)** - Componentes, estado, temas
+
+## Tecnologias
+
+### Backend
+- **Fastify** - Framework web rápido
+- **Prisma** - ORM type-safe
+- **JWT** - Autenticação stateless
+- **AWS SDK** - Upload/download S3
+- **Node-cron** - Jobs agendados
+
+### Frontend
+- **Next.js 14** - React framework
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Estilos
+- **Axios** - HTTP client

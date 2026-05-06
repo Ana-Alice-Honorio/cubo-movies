@@ -8,8 +8,10 @@ Pré-requisitos:
 - AWS credentials com permissão S3 (para uploads)
 
 Exemplo de `.env` (crie em `backend/.env`):
+
+
 ```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/cubos_movies?schema=public"
+DATABASE_URL="postgresql://[usuario]:[senha]@localhost:5432/cubos_movies?schema=public"
 JWT_SECRET="change-me"
 PORT=3001
 CRON_SECRET="um-segredo-compartilhado-com-o-frontend"
@@ -53,7 +55,24 @@ Notas importantes sobre S3 e segurança:
 - Uploads são prefixados por `movies/{userId}/...` para organização.
 - O backend valida ownership antes de aceitar updates/deletes e valida `imageKey` para evitar que usuário aponte um arquivo de outra conta.
 
-Endpoints principais (resumido):
+## Documentação da API (Swagger/OpenAPI)
+
+O backend expõe documentação interativa em:
+
+```
+http://localhost:3001/docs
+```
+
+O Swagger UI permite:
+- 📖 Visualizar todos os endpoints disponíveis
+- 📋 Ver schemas de request/response
+- 🧪 Testar requisições diretamente da UI
+- 🔐 Autenticar com JWT para endpoints protegidos
+
+Todos os endpoints estão documentados com suas validações, exemplos e códigos de status esperados.
+
+## Endpoints principais (resumido)
+
 - `POST /auth/register` — registrar
 - `POST /auth/login` — login (cookie httpOnly)
 - `GET /auth/me` — usuário atual
@@ -61,4 +80,5 @@ Endpoints principais (resumido):
 - `POST /movies/upload-url` — gerar presigned PUT (recebe `fileName`/`mimeType`)
 - `PATCH /movies/:id` — atualizar (valida ownership e imageKey)
 - `GET /movies` — listar filmes do usuário
+- `DELETE /movies/:id` — deletar filme
 - `POST /cron/release-reminders` — dispara os lembretes de estreia do dia (protegido por `CRON_SECRET`)

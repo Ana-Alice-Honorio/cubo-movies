@@ -20,7 +20,7 @@ export function Button({
 
   const primaryStyles = isDisabled
     ? 'bg-[#6F6D78] text-white cursor-not-allowed'
-    : 'bg-[#8E4EC6] text-white cursor-pointer hover:bg-[#9A5CD0] active:bg-[#8457AA]';
+    : 'bg-[var(--accent)] text-white cursor-pointer hover:bg-[var(--accent-hover)] active:bg-[#8457AA]';
 
   const secondaryStyles = isDisabled
     ? 'bg-[#EBEAF814] text-white cursor-not-allowed'

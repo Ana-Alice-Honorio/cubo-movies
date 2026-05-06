@@ -3,9 +3,11 @@
 import Image from "next/image";
 import { Button } from "@/components/ui";
 import { useAuth } from "@/lib/auth-context";
+import { useTheme } from "@/lib/theme-context";
 
 export default function Header() {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   const handleLogout = async () => {
     await logout();
@@ -20,7 +22,7 @@ export default function Header() {
             alt="Cubos Movies"
             width={121}
             height={24}
-            style={{ width: "121px", height: "auto" }}
+            style={{ width: "121px", height: "auto", filter: theme === "light" ? "invert(1)" : "none" }}
             className="hidden sm:block"
             priority
           />
@@ -30,15 +32,15 @@ export default function Header() {
             width={35}
             height={35}
             className="sm:hidden"
+            style={{ filter: theme === "light" ? "invert(1)" : "none" }}
             priority
           />
-          <span
-            className="text-center font-bold leading-none"
+          <span className="text-center font-bold leading-none"
             style={{
               fontFamily: "var(--font-inter)",
               fontSize: "20px",
               fontWeight: 700,
-              color: "#EEEEF0",
+              color: "var(--foreground)",
               width: "71px",
               height: "24px",
               display: "flex",
@@ -53,15 +55,16 @@ export default function Header() {
           <button
             type="button"
             aria-label="Alternar tema"
+                       onClick={toggleTheme}
             className="flex h-[44px] min-h-[44px] w-[64px] items-center justify-center rounded-[2px] border border-none px-5 backdrop-blur-[4px] transition-colors cursor-pointer"
             style={{ backgroundColor: "#B744F714" }}
           >
             <Image
-              src="/svgs/Sun_fill.svg"
+              src={theme === "dark" ? "/svgs/Sun_fill.svg" : "/svgs/Moon_fill.svg"}
               alt="Sun icon"
               width={20}
               height={20}
-              style={{ filter: "invert(1)" }}
+              style={{ filter: theme === "dark" ? "invert(1)" : "none" }}
             />
           </button>
           {user && (

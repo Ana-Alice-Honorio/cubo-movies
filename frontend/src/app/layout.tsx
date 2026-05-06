@@ -6,6 +6,8 @@ import Footer from "@/components/layout/Footer";
 import { AuthProvider } from "@/lib/auth-context";
 import "./globals.css";
 
+import { ThemeProvider } from "@/lib/theme-context";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -39,14 +41,16 @@ export default function RootLayout({
       lang="pt-BR"
       className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-[#0f0e11] text-white">
-        <AuthProvider>
-          <div className="app-shell flex min-h-screen flex-col">
-            <Header />
-            <main className="flex flex-1">{children}</main>
-            <Footer />
-          </div>
-        </AuthProvider>
+      <body className="min-h-full text-foreground">
+        <ThemeProvider>
+          <AuthProvider>
+            <div className="app-shell flex min-h-screen flex-col">
+              <Header />
+              <main className="flex flex-1">{children}</main>
+              <Footer />
+            </div>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

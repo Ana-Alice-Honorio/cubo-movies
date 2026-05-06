@@ -231,12 +231,13 @@ export default function CreateMovieModal({ onClose, onSuccess, movie }: CreateMo
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="surface-card w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg p-6">
+      <div className="surface-card w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg p-6" style={{ background: 'var(--surface)', color: 'var(--foreground)' }}>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">{isEditMode ? 'Editar Filme' : 'Novo Filme'}</h2>
+          <h2 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>{isEditMode ? 'Editar Filme' : 'Novo Filme'}</h2>
           <button
             onClick={onClose}
             className="text-muted hover:text-foreground cursor-pointer transition-colors"
+            style={{ color: 'var(--muted)' }}
           >
             ✕
           </button>

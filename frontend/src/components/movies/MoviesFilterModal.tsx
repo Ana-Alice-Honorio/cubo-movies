@@ -79,11 +79,11 @@ export default function MoviesFilterModal({ open, filters, onClose, onApply, onC
     <div className="fixed inset-0 z-[60] flex items-center justify-center px-4 py-6">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" onClick={onClose} />
 
-      <div className="relative z-10 w-full max-w-2xl overflow-hidden rounded-[24px] border border-white/10 bg-[#0f0e13] shadow-[0_32px_80px_rgba(0,0,0,0.45)]">
-        <div className="border-b border-white/10 px-6 py-5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/50">Filtragem</p>
-          <h3 className="mt-1 text-2xl font-semibold text-white">Refinar resultados</h3>
-          <p className="mt-2 text-sm text-white/65">
+      <div className="relative z-10 w-full max-w-2xl overflow-hidden rounded-[24px] border" style={{ borderColor: 'var(--border)', background: 'var(--surface)', boxShadow: '0 32px 80px rgba(0,0,0,0.45)' }}>
+        <div className="border-b" style={{ borderColor: 'var(--border)' }}>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em]" style={{ color: 'var(--muted)' }}>Filtragem</p>
+          <h3 className="mt-1 text-2xl font-semibold" style={{ color: 'var(--foreground)' }}>Refinar resultados</h3>
+          <p className="mt-2 text-sm" style={{ color: 'var(--foreground)' }}>
             Use gênero, período de lançamento e status para afinar a lista de filmes.
           </p>
         </div>

@@ -264,7 +264,7 @@ export default function MovieDetailsPage() {
 
   return (
     <div className="w-full px-4 py-6 md:px-6 md:py-8">
-      <section className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-[18px] border border-white/10 bg-[#121115]">
+      <section className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-[18px] border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
@@ -273,11 +273,11 @@ export default function MovieDetailsPage() {
         />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(201,173,67,0.3),transparent_45%)]" />
 
-        <div className="relative z-10 p-4 md:p-6">
+        <div className="relative z-10 p-4 md:p-6" style={{ color: 'var(--foreground)' }}>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-white md:text-4xl">{movie.title}</h1>
-              <p className="mt-1 text-lg text-white/80">
+              <h1 className="text-3xl font-bold tracking-tight md:text-4xl" style={{ color: 'var(--foreground)' }}>{movie.title}</h1>
+              <p className="mt-1 text-lg" style={{ color: 'var(--foreground)', opacity: 0.8 }}>
                 Título original: {movie.originalTitle || movie.title}
               </p>
             </div>
@@ -327,7 +327,7 @@ export default function MovieDetailsPage() {
               </div>
 
                 <div className="md:col-span-8 space-y-5 lg:max-w-[840px]">
-                  <p className="text-xl italic leading-tight text-white/90 md:text-2xl">Todo heroi tem um comeco.</p>
+                  <p className="text-xl italic leading-tight md:text-2xl" style={{ color: 'var(--foreground)', opacity: 0.9 }}>Todo heroi tem um comeco.</p>
 
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <InfoCard label="Lançamento" value={`${formatDate(movie.releaseDate)}`} />

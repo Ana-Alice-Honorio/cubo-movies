@@ -384,16 +384,7 @@ export default function CreateMovieModal({ onClose, onSuccess, movie }: CreateMo
           )}
 
           <div className="flex gap-3 justify-end pt-4">
-            {isEditMode && (
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={isSubmitting}
-                className="mr-auto rounded border border-red-500/40 px-4 py-2 text-red-200 hover:bg-red-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Excluir
-              </button>
-            )}
+         
             <button
               type="button"
               onClick={onClose}

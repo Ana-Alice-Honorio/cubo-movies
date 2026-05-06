@@ -7,6 +7,16 @@ import {
   generatePresignedReadUrl,
   deleteS3Object,
 } from '../lib/s3.js';
+import {
+  createMovieBodySchema,
+  messageSchema,
+  movieListResponseSchema,
+  movieSchema,
+  updateMovieBodySchema,
+  uploadMovieUrlBodySchema,
+  uploadMovieUrlResponseSchema,
+  validationErrorSchema,
+} from '../lib/openapi.js';
 
 function withThumbnailUrl(movie: {
   id: string;
@@ -61,7 +71,18 @@ function parseDateEndExclusive(value?: string) {
 export async function movieRoutes(app: FastifyInstance) {
   app.post<{ Body: unknown }>(
     '/movies',
-    { onRequest: [app.authenticate] },
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        body: createMovieBodySchema,
+        response: {
+          201: movieSchema,
+          400: validationErrorSchema,
+          401: messageSchema,
+          500: messageSchema,
+        },
+      },
+    },
     async (request, reply) => {
       const userId = request.user.sub;
       const payload = createMovieSchema.safeParse(request.body);
@@ -100,7 +121,18 @@ export async function movieRoutes(app: FastifyInstance) {
 
   app.post<{ Body: { fileName: string; mimeType: string } }>(
     '/movies/upload-url',
-    { onRequest: [app.authenticate] },
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        body: uploadMovieUrlBodySchema,
+        response: {
+          200: uploadMovieUrlResponseSchema,
+          400: messageSchema,
+          401: messageSchema,
+          500: messageSchema,
+        },
+      },
+    },
     async (request, reply) => {
       const { fileName, mimeType } = request.body as { fileName?: string; mimeType?: string };
       const userId = request.user.sub;
@@ -124,7 +156,19 @@ export async function movieRoutes(app: FastifyInstance) {
     Body: { imageKey?: string; imageUrl?: string; trailerLink?: string | null } & Record<string, unknown>;
   }>(
     '/movies/:id',
-    { onRequest: [app.authenticate] },
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        body: updateMovieBodySchema,
+        response: {
+          200: movieSchema,
+          400: messageSchema,
+          401: messageSchema,
+          404: messageSchema,
+          500: messageSchema,
+        },
+      },
+    },
     async (request, reply) => {
       const userId = request.user.sub;
       const { id } = request.params;
@@ -196,7 +240,16 @@ export async function movieRoutes(app: FastifyInstance) {
     };
   }>(
     '/movies',
-    { onRequest: [app.authenticate] },
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        response: {
+          200: movieListResponseSchema,
+          401: messageSchema,
+          500: messageSchema,
+        },
+      },
+    },
     async (request, reply) => {
       const userId = request.user.sub;
       const limit = Math.min(parseInt(request.query.limit as string) || 10, 100);
@@ -259,7 +312,17 @@ export async function movieRoutes(app: FastifyInstance) {
 
   app.get<{ Params: { id: string } }>(
     '/movies/:id',
-    { onRequest: [app.authenticate] },
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        response: {
+          200: movieSchema,
+          401: messageSchema,
+          404: messageSchema,
+          500: messageSchema,
+        },
+      },
+    },
     async (request, reply) => {
       const userId = request.user.sub;
       const { id } = request.params;
@@ -283,7 +346,17 @@ export async function movieRoutes(app: FastifyInstance) {
 
   app.delete<{ Params: { id: string } }>(
     '/movies/:id',
-    { onRequest: [app.authenticate] },
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        response: {
+          200: messageSchema,
+          401: messageSchema,
+          404: messageSchema,
+          500: messageSchema,
+        },
+      },
+    },
     async (request, reply) => {
       const userId = request.user.sub;
       const { id } = request.params;

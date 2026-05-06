@@ -2,6 +2,8 @@ import Fastify from 'fastify';
 import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
 import { authRoutes, authCookieName } from './routes/auth.js';
 import { cronRoutes } from './routes/cron.js';
 import { movieRoutes } from './routes/movies.js';
@@ -29,9 +31,44 @@ export function buildApp() {
     },
   });
 
+  app.register(swagger, {
+    openapi: {
+      info: {
+        title: 'Cubos Movies API',
+        description: 'Documentação das rotas do backend de Cubos Movies',
+        version: '1.0.0',
+      },
+    },
+  });
+
+  app.register(swaggerUi, {
+    routePrefix: '/docs',
+    uiConfig: {
+      docExpansion: 'list',
+      deepLinking: false,
+    },
+  });
+
   void registerAuthPlugin(app);
 
-  app.get('/health', async () => ({ status: 'ok' }));
+  app.get(
+    '/health',
+    {
+      schema: {
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              status: { type: 'string' },
+            },
+            required: ['status'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    async () => ({ status: 'ok' })
+  );
 
   app.register(authRoutes, { prefix: '/auth' });
   app.register(cronRoutes);

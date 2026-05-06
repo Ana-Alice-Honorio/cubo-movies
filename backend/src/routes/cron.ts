@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { sendReleaseReminders } from '../lib/release-reminders.js';
+import { cronResponseSchema, messageSchema } from '../lib/openapi.js';
 
 function isAuthorizedCronRequest(headerValue: string | undefined, expectedSecret: string | undefined) {
   if (!expectedSecret) {
@@ -34,6 +35,20 @@ async function handleReleaseReminders(app: FastifyInstance, request: FastifyRequ
 }
 
 export async function cronRoutes(app: FastifyInstance) {
-  app.get('/cron/release-reminders', async (request, reply) => handleReleaseReminders(app, request, reply));
-  app.post('/cron/release-reminders', async (request, reply) => handleReleaseReminders(app, request, reply));
+  const routeOptions = {
+    schema: {
+      response: {
+        200: cronResponseSchema,
+        401: messageSchema,
+        500: messageSchema,
+      },
+    },
+  };
+
+  app.get('/cron/release-reminders', routeOptions, async (request, reply) =>
+    handleReleaseReminders(app, request, reply)
+  );
+  app.post('/cron/release-reminders', routeOptions, async (request, reply) =>
+    handleReleaseReminders(app, request, reply)
+  );
 }

@@ -186,6 +186,20 @@ Abra seu navegador em **http://localhost:3000**
 | `CRON_SECRET` | Token para jobs agendados | Qualquer string segura |
 | `ENABLE_RELEASE_REMINDER_CRON` | Ativar lembretes | `true` ou `false` |
 
+
+### Envio de notificação de lançamento de filme por email:
+- O cron roda diariamente ás 9h da manhã, e envia todos os emails de lançamento daquele dia
+- Caso queira testar de imediato, siga os passos:
+1. Crie ou edite um filme com data de lançamento para o dia atual e salve
+2. Abra a pasta /backend e rode:
+```bash
+curl -X POST http://localhost:3001/cron/release-reminders \
+-H "x-cron-secret: SEU_CRON_SECRET"
+```
+Dando certo, terá isso aqui em no terminal:
+
+![alt text](images-readme/cron.png)
+
 ## Troubleshooting
 
 ### Erro: "Banco de dados não encontrado"

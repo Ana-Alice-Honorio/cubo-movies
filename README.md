@@ -86,8 +86,8 @@ cd cubos-movies
 # Iniciar PostgreSQL em Docker
 docker run \
   --name cubos-postgres \
-  -e POSTGRES_USER=admin \
-  -e POSTGRES_PASSWORD=senha123 \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
   -e POSTGRES_DB=cubos_movies \
   -p 5432:5432 \
   -d postgres:16
@@ -96,42 +96,40 @@ docker run \
 docker start cubos-postgres
 ```
 
-### 3. Configurar variáveis de ambiente
+### 3. Configurar variáveis de ambiente (seguro)
 
-Criar arquivo `backend/.env`:
+Copie o arquivo de exemplo e edite localmente (NÃO comite segredos):
 
-```env
-# Banco de dados
-DATABASE_URL="postgresql://[usuario]:[senha]@localhost:5432/cubos_movies"
-
-# JWT
-JWT_SECRET="sua-chave-secreta-muito-segura-aqui"
-
-# Servidor
-PORT=3001
-
-# AWS S3 (upload de posters)
-AWS_ACCESS_KEY_ID="sua-chave-id"
-AWS_SECRET_ACCESS_KEY="sua-chave-secreta"
-AWS_REGION="us-east-1"
-AWS_S3_BUCKET="seu-bucket-name"
-
-# Email (SMTP para lembretes)
-SMTP_USER="seu-email@gmail.com"
-SMTP_APP_PASSWORD="sua-senha-app"
-MAIL_FROM="seu-email@gmail.com"
-
-# CRON
-ENABLE_RELEASE_REMINDER_CRON=true
-CRON_SECRET="chave-secreta-cron"
+```bash
+cp backend/.env.example backend/.env
+# editar backend/.env com valores locais
 ```
 
-**Variáveis explicadas:**
-- `DATABASE_URL`: String de conexão PostgreSQL
-- `JWT_SECRET`: Chave para assinar tokens JWT (use algo como `openssl rand -base64 32`)
-- `AWS_*`: Credenciais e bucket S3 para armazenar posters de filmes
-- `SMTP_*`: Configuração de email para lembretes de lançamento
-- `CRON_SECRET`: Token para proteger endpoint de CRON
+Gerar segredos/valores seguros:
+
+```bash
+# gerar CRON_SECRET (OpenSSL)
+openssl rand -hex 32
+
+# ou (Node.js, cross-platform)
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+
+# gerar JWT_SECRET de forma similar
+```
+
+SMTP / emails:
+Como gerar senha SMTP:
+- Entre na sua conta Google
+- Vá em Configurações
+- Segurança e login 
+Obs: A verificação em duas etapas deve estar ativa.
+- Na barra de buscas digite "apps senha" e selecione a opção: Senhas de app
+- Ele vai pedir pra confirmar sua senha (a usada no Google). Após a confirmação, ele abrirá uma tela de cadastro de novo app como imagem abaixo:
+![alt text](images-readme/image.png)
+- Após criar, ele irá gerar uma senha. Copie e guarde essa senha, pois ela some. É visível apenas uma vez.
+- Cole ela no seu .env no SMTP_APP_PASSWORD. Apague os espaços (será gerado 16 caracteres em 4 blocos de 4 caracteres). Deixe os 16 itens seguidos sem espaço.
+
+SMTP_USER e SMPT_FROM será o email que enviará as notificações.
 
 ### 4. Setup backend
 

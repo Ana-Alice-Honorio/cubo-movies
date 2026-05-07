@@ -11,20 +11,38 @@ Exemplo de `.env` (crie em `backend/.env`):
 
 
 ```env
-DATABASE_URL="postgresql://[usuario]:[senha]@localhost:5432/cubos_movies?schema=public"
-JWT_SECRET="change-me"
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/cubos_movies?schema=public"
+JWT_SECRET="um hash qualquer para ser usado como segredo na geração dos tokens JWT"
 PORT=3001
-CRON_SECRET="um-segredo-compartilhado-com-o-frontend"
-
-SMTP_USER="seu-email@gmail.com"
-SMTP_APP_PASSWORD="senha-de-app-de-16-digitos"
-MAIL_FROM='"Filmes Desafio" <seu-email@gmail.com>'
-
 AWS_ACCESS_KEY_ID=AKIA...
-AWS_SECRET_ACCESS_KEY=...
+AWS_SECRET_ACCESS_KEY=
 AWS_REGION=us-east-1
 AWS_S3_BUCKET=cubos-movies-files-bucket
+ENABLE_RELEASE_REMINDER_CRON=true
+SMTP_USER=seu-email
+SMTP_APP_PASSWORD=senha-de-aplicativo
+MAIL_FROM=seu-email
+CRON_SECRET=um hash (o mesmo do .env do frontend)
 ```
+
+1. Como gerar o hash do cron secret:
+```bash
+openssl rand -hex 32
+```
+Ou pode gerar de outras formas, fica a seu critério.
+
+2. Como gerar senha SMTP:
+- Entre na sua conta Google
+- Vá em Configurações
+- Segurança e login 
+Obs: A verificação em duas etapas deve estar ativa.
+- Na barra de buscas digite "apps senha" e selecione a opção: Senhas de app
+- Ele vai pedir pra confirmar sua senha (a usada no Google). Após a confirmação, ele abrirá uma tela de cadastro de novo app como imagem abaixo:
+![alt text](images-readme/image.png)
+- Após criar, ele irá gerar uma senha. Copie e guarde essa senha, pois ela some. É visível apenas uma vez.
+- Cole ela no seu .env no SMTP_APP_PASSWORD. Apague os espaços (será gerado 16 caracteres em 4 blocos de 4 caracteres). Deixe os 16 itens seguidos sem espaço.
+
+3. SMTP_USER e SMPT_FROM será o email que enviará as notificações.
 
 Instalação e migrações:
 ```bash

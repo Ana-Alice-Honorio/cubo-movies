@@ -2,6 +2,10 @@
 
 Aplicação web completa e responsiva de gerenciamento de filmes com backend em **Fastify + Prisma** e frontend em **Next.js**.
 
+![GitHub repo size](https://img.shields.io/github/repo-size/Ana-Alice-Honorio/cubo-movies?style=for-the-badge)
+![GitHub language count](https://img.shields.io/github/languages/count/Ana-Alice-Honorio/cubo-movies?style=for-the-badge)
+![last commit](https://img.shields.io/github/last-commit/Ana-Alice-Honorio/cubo-movies?style=for-the-badge")
+![Feito por Alice](https://img.shields.io/badge/feito-por%20Alice-D818A5")
 ## Objetivo
 
 Desenvolver uma plataforma que permita usuários:
